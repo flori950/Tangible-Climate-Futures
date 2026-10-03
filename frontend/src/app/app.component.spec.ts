@@ -1,29 +1,35 @@
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { RouterOutlet } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { commonTestProviders, mockAuthServiceProvider } from '../testing/test-helpers';
 import { AppComponent } from './app.component';
+import { SharedModule } from './shared/shared.module';
 
 describe('AppComponent', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    imports: [RouterTestingModule],
-    declarations: [AppComponent]
-  }));
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      imports: [SharedModule, RouterOutlet],
+      declarations: [AppComponent],
+      providers: [...commonTestProviders(), mockAuthServiceProvider()],
+    });
   });
 
-  it(`should have as title 'frontend'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    // expect(app.title).toEqual('frontend');
-  });
-
-  it('should render title', () => {
+  it('renders the header and a router outlet', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('frontend app is running!');
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('app-top-menu')).not.toBeNull();
+    expect(element.querySelector('router-outlet')).not.toBeNull();
+  });
+
+  it('switches the active language', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const translate = TestBed.inject(TranslateService);
+    const use = vi.spyOn(translate, 'use');
+
+    fixture.componentInstance.switchLanguage('en');
+
+    expect(use).toHaveBeenCalledWith('en');
   });
 });
