@@ -1,26 +1,22 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 
 describe("Checks if simple POST for Journey", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it('returns {"status":"200"} and the uploaded Document', async () => {
@@ -32,7 +28,7 @@ describe("Checks if simple POST for Journey", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(compareSingleJson(journeyObject, JSON.parse(response.text))).toBe(
-      true
+      true,
     );
   });
 });

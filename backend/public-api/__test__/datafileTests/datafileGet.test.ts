@@ -1,20 +1,17 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 
 describe("Checks if simple GET for DataFile works", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   let docID: string;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
     // Post a single document
     const response = await request(app).post("/api/datafile").send(document1);
@@ -24,8 +21,7 @@ describe("Checks if simple GET for DataFile works", () => {
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it("Should return a single document with given ID", async () => {

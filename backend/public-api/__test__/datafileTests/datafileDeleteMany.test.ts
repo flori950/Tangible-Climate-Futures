@@ -2,29 +2,31 @@ import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 import DatafileSchema from "../../src/models/datafile.model";
+import type { Datafile } from "../../../../common/types";
 
 describe("Checks if /deleteMany for Datafile", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   const ids: string[] = [];
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
-    ids.push((await DatafileSchema.create(datafileObject))._id);
-    ids.push((await DatafileSchema.create(otherObject))._id);
+    ids.push(
+      (await DatafileSchema.create(datafileObject as unknown as Datafile))._id,
+    );
+    ids.push(
+      (await DatafileSchema.create(otherObject as unknown as Datafile))._id,
+    );
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it('returns {"status":"200"} for existing IDs', async () => {
@@ -37,15 +39,15 @@ describe("Checks if /deleteMany for Datafile", () => {
     expect(
       compareSingleJson(
         [datafileObject, otherObject],
-        JSON.parse(response.text)
-      )
+        JSON.parse(response.text),
+      ),
     ).toBe(true);
   });
 
   it('returns {"status":"200"} and empty list for non-existing IDs', async () => {
     const differentIDs = [
-      new mongoose.Types.ObjectId(1),
-      new mongoose.Types.ObjectId(2),
+      mongoose.Types.ObjectId.createFromTime(1),
+      mongoose.Types.ObjectId.createFromTime(2),
     ];
     const response = await request(app)
       .post("/api/journey/deleteMany")

@@ -2,29 +2,29 @@ import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 import JourneySchema from "../../src/models/journey.model";
+import type { Journey } from "../../../../common/types";
 
 describe("Checks if simple PUT for Journey", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   let id: string;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
-    const response = await JourneySchema.create(journeyObject);
+    const response = await JourneySchema.create(
+      journeyObject as unknown as Journey,
+    );
     id = response._id;
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it('returns {"status":"200"} and updated Document for existing ID', async () => {
@@ -35,12 +35,12 @@ describe("Checks if simple PUT for Journey", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(compareSingleJson(newJourneyObject, JSON.parse(response.text))).toBe(
-      true
+      true,
     );
   });
 
   it('returns {"status":"404"} for non-existing ID', async () => {
-    const differentID = new mongoose.Types.ObjectId(1);
+    const differentID = mongoose.Types.ObjectId.createFromTime(1);
     const response = await request(app)
       .delete(`/api/journey/${differentID}`)
       .send(newJourneyObject);

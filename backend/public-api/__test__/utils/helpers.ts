@@ -1,4 +1,4 @@
-import { JsonObject } from "swagger-ui-express";
+import type { JsonObject } from "../../../../common/types";
 
 // Written with the help of ChatGPT
 export function compareSingleJson(obj1: JsonObject, obj2: JsonObject): boolean {
@@ -20,7 +20,7 @@ export function compareSingleJson(obj1: JsonObject, obj2: JsonObject): boolean {
     return Object.keys(obj1).every(
       (key) =>
         Object.prototype.hasOwnProperty.call(obj2, key) &&
-        compareSingleJson(obj1[key], obj2[key])
+        compareSingleJson(obj1[key], obj2[key]),
     );
   }
 
@@ -31,25 +31,24 @@ export function compareSingleJson(obj1: JsonObject, obj2: JsonObject): boolean {
 // Writen also by ChatGPT
 export function checkArrayContainsObjects(
   arr: JsonObject[],
-  targetArr: JsonObject[]
+  targetArr: JsonObject[],
 ): boolean {
   if (arr.length !== targetArr.length) {
     console.log(
-      `Arrays do not have the same length! (${arr.length} != ${targetArr.length})`
+      `Arrays do not have the same length! (${arr.length} != ${targetArr.length})`,
     );
     return false;
   }
-  arr.every((obj) => {
-    // Check if all key-values exist on the other object
+  // Every object must be (partially) contained in one of the target objects
+  return arr.every((obj) => {
     const exists = targetArr.some((targetObj) =>
-      compareSingleJson(obj, targetObj)
+      compareSingleJson(obj, targetObj),
     );
     if (!exists) {
       console.log(
-        `Object ${JSON.stringify(obj)} does not exist in the other array.`
+        `Object ${JSON.stringify(obj)} does not exist in the other array.`,
       );
-      return false;
     }
+    return exists;
   });
-  return true;
 }

@@ -1,32 +1,29 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { checkArrayContainsObjects } from "../utils/helpers";
 import { Application } from "express";
 import DataFileSchema from "../../src/models/datafile.model";
+import type { Datafile } from "../../../../common/types";
 
 let app: Application;
-let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   // Create MongoDB
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri());
+  await connectTestDatabase();
   app = new App().express;
   // Post documents
-  await DataFileSchema.create(document1);
-  await DataFileSchema.create(document2);
-  await DataFileSchema.create(document3);
-  await DataFileSchema.create(document4);
-  await DataFileSchema.create(document5);
+  await DataFileSchema.create(document1 as unknown as Datafile);
+  await DataFileSchema.create(document2 as unknown as Datafile);
+  await DataFileSchema.create(document3 as unknown as Datafile);
+  await DataFileSchema.create(document4 as unknown as Datafile);
+  await DataFileSchema.create(document5 as unknown as Datafile);
 });
 
 afterAll(async () => {
   // Close MongoDB
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  await disconnectTestDatabase();
 });
 
 describe("Checks if AND + NOT boolean concatenation works", () => {
@@ -62,7 +59,7 @@ describe("Checks if AND + NOT boolean concatenation works", () => {
     JSON.parse(response.text);
     // Compare the response object to the posted object
     expect(
-      checkArrayContainsObjects([document1, document3, document4], results)
+      checkArrayContainsObjects([document1, document3, document4], results),
     ).toBe(true);
   });
 });
@@ -99,7 +96,7 @@ describe("Checks if AND boolean concatenation works", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(checkArrayContainsObjects([document1, document3], results)).toBe(
-      true
+      true,
     );
   });
 });
@@ -136,7 +133,7 @@ describe("Checks if OR boolean concatenation works", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(
-      checkArrayContainsObjects([document1, document2, document4], results)
+      checkArrayContainsObjects([document1, document2, document4], results),
     ).toBe(true);
   });
 });

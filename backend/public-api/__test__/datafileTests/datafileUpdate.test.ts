@@ -1,26 +1,22 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 
 describe("Checks if simple PUT for DataFile works", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it("Should update the document", async () => {

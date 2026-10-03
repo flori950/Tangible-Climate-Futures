@@ -1,28 +1,25 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { checkArrayContainsObjects } from "../utils/helpers";
 import { Application } from "express";
 import JourneySchema from "../../src/models/journey.model";
+import type { Journey } from "../../../../common/types";
 
 let app: Application;
-let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   // Create MongoDB
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri());
+  await connectTestDatabase();
   app = new App().express;
   // Post documents
-  await JourneySchema.create(journeyObject);
+  await JourneySchema.create(journeyObject as unknown as Journey);
 });
 
 afterAll(async () => {
   // Close MongoDB
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  await disconnectTestDatabase();
 });
 
 describe("Checks if simple CONTAINS works", () => {

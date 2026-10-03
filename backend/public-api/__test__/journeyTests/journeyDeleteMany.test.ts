@@ -2,29 +2,31 @@ import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { compareSingleJson } from "../utils/helpers";
 import { Application } from "express";
 import JourneySchema from "../../src/models/journey.model";
+import type { Journey } from "../../../../common/types";
 
 describe("Checks if /deleteMany for Journey", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   const ids: string[] = [];
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
-    ids.push((await JourneySchema.create(journeyObject))._id);
-    ids.push((await JourneySchema.create(otherObject))._id);
+    ids.push(
+      (await JourneySchema.create(journeyObject as unknown as Journey))._id,
+    );
+    ids.push(
+      (await JourneySchema.create(otherObject as unknown as Journey))._id,
+    );
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it('returns {"status":"200"} for existing IDs', async () => {
@@ -35,14 +37,17 @@ describe("Checks if /deleteMany for Journey", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(
-      compareSingleJson([journeyObject, otherObject], JSON.parse(response.text))
+      compareSingleJson(
+        [journeyObject, otherObject],
+        JSON.parse(response.text),
+      ),
     ).toBe(true);
   });
 
   it('returns {"status":"200"} and empty list for non-existing IDs', async () => {
     const differentIDs = [
-      new mongoose.Types.ObjectId(1),
-      new mongoose.Types.ObjectId(2),
+      mongoose.Types.ObjectId.createFromTime(1),
+      mongoose.Types.ObjectId.createFromTime(2),
     ];
     const response = await request(app)
       .post("/api/journey/deleteMany")

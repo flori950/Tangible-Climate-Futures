@@ -1,20 +1,17 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { Application } from "express";
 import { NestedValueDeleteParams } from "../../../../common/types";
 
 describe("Checks if /nestedValues works", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   let docID: string;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
     // Post a single document
     const response = await request(app).post("/api/datafile").send(document);
@@ -24,13 +21,12 @@ describe("Checks if /nestedValues works", () => {
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it("Should return 'bar' with status code 200", async () => {
     const response = await request(app).get(
-      `/api/datafile/nestedValue/${docID}/content.data.foo`
+      `/api/datafile/nestedValue/${docID}/content.data.foo`,
     );
     expect(response.status).toBe(200);
     expect(JSON.parse(response.text)).toEqual("bar");
@@ -38,7 +34,7 @@ describe("Checks if /nestedValues works", () => {
 
   it("Should return NotFoundError with status code 404", async () => {
     const response = await request(app).get(
-      `/api/datafile/nestedValue/${docID}/content.data.bar`
+      `/api/datafile/nestedValue/${docID}/content.data.bar`,
     );
     expect(response.status).toBe(404);
     expect(JSON.parse(response.text)).toEqual({
@@ -56,7 +52,7 @@ describe("Checks if /nestedValues works", () => {
       .send(deleteParams);
     expect(response.status).toBe(200);
     expect("foo" in (JSON.parse(response.text)?.content?.data ?? {})).toBe(
-      false
+      false,
     );
   });
 

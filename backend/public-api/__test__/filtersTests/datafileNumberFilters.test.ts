@@ -1,30 +1,27 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { checkArrayContainsObjects } from "../utils/helpers";
 import { Application } from "express";
 import DataFileSchema from "../../src/models/datafile.model";
+import type { Datafile } from "../../../../common/types";
 
 let app: Application;
-let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   // Create MongoDB
-  mongoServer = await MongoMemoryServer.create();
-  await mongoose.connect(mongoServer.getUri());
+  await connectTestDatabase();
   app = new App().express;
   // Post documents
-  await DataFileSchema.create(document1);
-  await DataFileSchema.create(document2);
-  await DataFileSchema.create(document3);
+  await DataFileSchema.create(document1 as unknown as Datafile);
+  await DataFileSchema.create(document2 as unknown as Datafile);
+  await DataFileSchema.create(document3 as unknown as Datafile);
 });
 
 afterAll(async () => {
   // Close MongoDB
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  await disconnectTestDatabase();
 });
 
 describe("Checks if simple EQ works", () => {
@@ -72,7 +69,7 @@ describe("Checks if simple GT works", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(checkArrayContainsObjects([document2, document3], results)).toBe(
-      true
+      true,
     );
   });
 });
@@ -98,7 +95,7 @@ describe("Checks if simple GTE works", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(
-      checkArrayContainsObjects([document1, document2, document3], results)
+      checkArrayContainsObjects([document1, document2, document3], results),
     ).toBe(true);
   });
 });
@@ -148,7 +145,7 @@ describe("Checks if simple LTE works", () => {
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(checkArrayContainsObjects([document1, document2], results)).toBe(
-      true
+      true,
     );
   });
 });

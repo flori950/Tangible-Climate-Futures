@@ -1,33 +1,34 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { Application } from "express";
 import path from "path";
 import DatafileSchema from "../../src/models/datafile.model";
+import type { Datafile } from "../../../../common/types";
 
 describe("Checks if /fromFile and /attach for DataFile works", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
   let id: string;
   let id_ref: string;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
-    const response = await DatafileSchema.create(datafileObject);
+    const response = await DatafileSchema.create(
+      datafileObject as unknown as Datafile,
+    );
     id = response._id;
-    const response_ref = await DatafileSchema.create(datafileObjectRef);
+    const response_ref = await DatafileSchema.create(
+      datafileObjectRef as unknown as Datafile,
+    );
     id_ref = response_ref._id;
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it('Should return {"status":"200"} for CSV file on /fromFile', async () => {

@@ -1,41 +1,38 @@
 import request from "supertest";
 import { expect, describe, it, afterAll, beforeAll } from "@jest/globals";
 import App from "../../src/app";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { connectTestDatabase, disconnectTestDatabase } from "../utils/database";
 import { checkArrayContainsObjects } from "../utils/helpers";
 import { Application } from "express";
 import DataFileSchema from "../../src/models/datafile.model";
+import type { Datafile } from "../../../../common/types";
 
 describe("Checks if GET all documents works", () => {
   let app: Application;
-  let mongoServer: MongoMemoryServer;
 
   beforeAll(async () => {
     // Create MongoDB
-    mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri());
+    await connectTestDatabase();
     app = new App().express;
-    await DataFileSchema.create(document1);
-    await DataFileSchema.create(document2);
+    await DataFileSchema.create(document1 as unknown as Datafile);
+    await DataFileSchema.create(document2 as unknown as Datafile);
   });
 
   afterAll(async () => {
     // Close MongoDB connection and server
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await disconnectTestDatabase();
   });
 
   it("Should return all documents", async () => {
     const response = await request(app).get(
-      "/api/datafile/limit=15&skip=0&onlyMetadata=false"
+      "/api/datafile/limit=15&skip=0&onlyMetadata=false",
     );
     const results = JSON.parse(response.text)["results"];
     // Check the response status
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
     expect(checkArrayContainsObjects([document1, document2], results)).toBe(
-      true
+      true,
     );
     expect("data" in results[1]["content"]).toBe(true);
   });
@@ -43,14 +40,14 @@ describe("Checks if GET all documents works", () => {
   it("Should return only Metadata", async () => {
     // Set GET request
     const response = await request(app).get(
-      "/api/datafile/limit=15&skip=0&onlyMetadata=true"
+      "/api/datafile/limit=15&skip=0&onlyMetadata=true",
     );
     const results = JSON.parse(response.text)["results"];
     // Check the response status
     expect(response.status).toBe(200);
     // Compare the response object to the posted object
-    expect(checkArrayContainsObjects([document1, document2], results)).toBe(
-      true
+    expect(checkArrayContainsObjects([document1, document3], results)).toBe(
+      true,
     );
     expect("data" in results[1]["content"]).toBe(false);
   });
@@ -89,6 +86,7 @@ const document2 = {
   },
 };
 
+// document2 as returned with onlyMetadata=true (without content.data)
 const document3 = {
   title: "Other data",
   description: "This is data",
