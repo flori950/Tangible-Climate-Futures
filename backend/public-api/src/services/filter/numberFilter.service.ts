@@ -1,5 +1,4 @@
-import { NumberFilter } from "../../../../../common/types";
-import { JsonObject } from "swagger-ui-express";
+import { NumberFilter, JsonObject } from "../../../../../common/types";
 
 /**
  * Handles the EQ filter operation

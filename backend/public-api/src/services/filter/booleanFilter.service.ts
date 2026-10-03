@@ -1,5 +1,4 @@
-import { BooleanFilter } from "../../../../../common/types";
-import { JsonObject } from "swagger-ui-express";
+import { BooleanFilter, JsonObject } from "../../../../../common/types";
 
 /**
  * Handles the IS filter operation

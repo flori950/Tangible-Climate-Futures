@@ -27,12 +27,12 @@ export default class NetCDFJsonBucketService extends BucketService {
    */
   override async uploadFile(
     documentId: string,
-    file: unknown
+    file: unknown,
   ): Promise<string | undefined> {
     return await super.uploadFile(
       documentId + this.fileExtension,
       file,
-      "application/json"
+      "application/json",
     );
   }
 

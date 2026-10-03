@@ -28,8 +28,10 @@ export abstract class CrudService<T, C, U> {
    * @returns A promise that resolves to the created entity.
    */
   async create(createEntity: C): Promise<T> {
-    const entity = this.model.create(createEntity);
-    return entity;
+    // Mongoose's `create` typing is stricter than the generic create params
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const entity = await this.model.create(createEntity as any);
+    return entity as T;
   }
 
   /**
@@ -40,9 +42,7 @@ export abstract class CrudService<T, C, U> {
    * @throws NotFoundError if the entity is not found.
    */
   async delete(id: string): Promise<T> {
-    const entity = await this.model
-      .findByIdAndRemove(id, { useFindAndModify: false })
-      .catch(console.log);
+    const entity = await this.model.findByIdAndDelete(id);
 
     if (!entity) {
       throw new NotFoundError();
@@ -80,9 +80,8 @@ export abstract class CrudService<T, C, U> {
       id,
       updateParams as UpdateQuery<T>,
       {
-        useFindAndModify: false,
-        new: true,
-      }
+        returnDocument: "after",
+      },
     );
 
     if (!entity) {
@@ -119,7 +118,7 @@ export abstract class CrudService<T, C, U> {
     const results = await this.model
       .aggregate([{ $match: {} }, { $skip: skip }, { $limit: limit }])
       .exec();
-    const totalCount = await this.model.count({}).exec();
+    const totalCount = await this.model.countDocuments({}).exec();
     return {
       skip: skip,
       limit: limit,

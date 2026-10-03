@@ -67,7 +67,7 @@ export default class DatafileService extends CrudService<
     ) {
       try {
         const fileData = await this.netCDFbucketService.downloadFile(
-          datafile._id as string
+          datafile._id as string,
         );
         datafile.content.data.dataObject.data = fileData;
         delete datafile.content.data.dataObject.dataId;
@@ -89,7 +89,7 @@ export default class DatafileService extends CrudService<
   async getAllExtended(
     onlyMetadata: boolean,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<PaginationResult<Datafile>> {
     // Create commands array
     const commandsArray: Array<PipelineStage> = [];
@@ -109,7 +109,7 @@ export default class DatafileService extends CrudService<
       ) {
         try {
           const fileData = await this.netCDFbucketService.downloadFile(
-            datafile._id as string
+            datafile._id as string,
           );
           datafile.content.data.dataObject.data = fileData;
           delete datafile.content.data.dataObject.dataId;
@@ -122,7 +122,7 @@ export default class DatafileService extends CrudService<
 
     const resultsWithNetCDF = await Promise.all(datafiles);
 
-    const totalCount = await this.model.count({}).exec();
+    const totalCount = await this.model.countDocuments({}).exec();
     return {
       skip: skip,
       limit: limit,
@@ -148,9 +148,10 @@ export default class DatafileService extends CrudService<
   async attachFile(
     file: Express.Multer.File,
     documentID: MongooseObjectId,
-    fileType: SupportedRawFileTypes
+    fileType: SupportedRawFileTypes,
   ): Promise<Datafile> {
     // Create the Datafile JSON object based on file type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dataObject: any;
     let updatedEntity: NotRefDataFile | null = null;
     let largeFileData: unknown;
@@ -161,7 +162,7 @@ export default class DatafileService extends CrudService<
       throw new NotFoundError();
     } else if (entity.dataType !== DataType.NOTREFERENCED) {
       throw new WrongObjectTypeError(
-        "Selected file needs to be a NOTREFERENCED file type."
+        "Selected file needs to be a NOTREFERENCED file type.",
       );
     }
     // Handle uploaded file based on its file type
@@ -189,7 +190,7 @@ export default class DatafileService extends CrudService<
         // upload raw data to bucket
         const dataId = await this.netCDFbucketService.uploadFile(
           documentID,
-          largeFileData
+          largeFileData,
         );
 
         dataObject = { netCdfInfo: metadata, dataId };
@@ -204,7 +205,7 @@ export default class DatafileService extends CrudService<
     if (dataObject) {
       updatedEntity = await this.attachDataToFile(documentID, dataObject);
 
-      if (largeFileData) {
+      if (updatedEntity && largeFileData) {
         delete updatedEntity.content.data.dataObject.dataId;
         updatedEntity.content.data.dataObject.data = largeFileData;
       }
@@ -223,18 +224,19 @@ export default class DatafileService extends CrudService<
    * @param dataObject The data to attach
    * @returns Promise of the updated Datafile.
    */
-  attachDataToFile(
+  async attachDataToFile(
     documentID: string,
-    dataObject: any
-  ): Promise<NotRefDataFile> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dataObject: any,
+  ): Promise<NotRefDataFile | null> {
     // Update the data
-    return this.model.findByIdAndUpdate(
+    return (await this.model.findByIdAndUpdate(
       documentID,
       {
         "content.data": { dataObject },
       },
-      { new: true, upsert: true }
-    );
+      { returnDocument: "after" },
+    )) as NotRefDataFile | null;
   }
 
   /**
@@ -253,7 +255,7 @@ export default class DatafileService extends CrudService<
     dataset: SupportedDatasetFileTypes,
     tags?: string,
     description?: string,
-    steps?: string
+    steps?: string,
   ): Promise<Datafile[]> {
     // Create the Datafile JSON object based on file type
     let createdDocuments: Datafile[] = [];
@@ -264,7 +266,7 @@ export default class DatafileService extends CrudService<
           file,
           this.model,
           tags,
-          description
+          description,
         );
         break;
       }
@@ -274,7 +276,7 @@ export default class DatafileService extends CrudService<
           file,
           tags,
           steps ? +steps : undefined,
-          description
+          description,
         );
         break;
       }
@@ -284,7 +286,7 @@ export default class DatafileService extends CrudService<
           file,
           this.model,
           tags,
-          description
+          description,
         );
         break;
       }
@@ -310,7 +312,7 @@ export default class DatafileService extends CrudService<
     filterSetParams: FilterSetParams,
     skip: number,
     limit: number,
-    onlyMetadata: boolean
+    onlyMetadata: boolean,
   ): Promise<PaginationResult<Datafile>> {
     const jsonQueries: PipelineStage[] = [];
     filterSetParams.filterSet.forEach((filter: AnyFilter) => {
@@ -353,16 +355,19 @@ export default class DatafileService extends CrudService<
    */
   async getNestedValue(
     documentId: MongooseObjectId,
-    path: string
+    path: string,
   ): Promise<unknown> {
     const keyValue = parsePath(path)
       .split(".") // Splits path on "."
       .filter(Boolean) // removes empty strings
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .reduce((obj: any, key: string) => {
-        return obj && obj[key];
-      }, await this.get(documentId));
-    if (!keyValue) {
+      .reduce(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (obj: any, key: string) => {
+          return obj && obj[key];
+        },
+        await this.get(documentId),
+      );
+    if (keyValue === undefined || keyValue === null) {
       throw new NotFoundError(`no key is found for the path ${path}`);
     }
     return keyValue;
@@ -380,13 +385,16 @@ export default class DatafileService extends CrudService<
     const documentIds = IDs.split(",");
     // Add the value to all documents
     const documents: Datafile[] = [];
-    for await (let id of documentIds) {
+    for (let id of documentIds) {
       id = id.trim();
       const document = await this.model.findByIdAndUpdate(
         id,
         { $unset: { [parsePath(path)]: "" } },
-        { new: true, upsert: true }
+        { returnDocument: "after" },
       );
+      if (!document) {
+        throw new NotFoundError(`Document ${id} not found.`);
+      }
       documents.push(document);
     }
     // Return changed datafiles
@@ -404,22 +412,22 @@ export default class DatafileService extends CrudService<
   async updateNestedValue(
     IDs: string,
     path: string,
-    value: unknown
+    value: unknown,
   ): Promise<Datafile[]> {
     // Split the IDs
     const documentIds = IDs.split(",");
     // Add the value to all documents
     const documents: Datafile[] = [];
-    for await (let id of documentIds) {
+    for (let id of documentIds) {
       // Delete empty spaces
       id = id.trim();
       const document = await this.model.findByIdAndUpdate(
         id,
         { [parsePath(path)]: value },
-        { new: true, upsert: true }
+        { returnDocument: "after" },
       );
       if (!document) {
-        throw new NotFoundError();
+        throw new NotFoundError(`Document ${id} not found.`);
       }
       documents.push(document);
     }

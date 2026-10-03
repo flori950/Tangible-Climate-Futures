@@ -59,7 +59,7 @@ export class DatafileController extends Controller {
   public async getAllDataFiles(
     @Path() skip: number,
     @Path() limit: number,
-    @Path() onlyMetadata: boolean
+    @Path() onlyMetadata: boolean,
   ): Promise<PaginationResult<Datafile>> {
     this.setStatus(200);
     return this.datafileService.getAllExtended(onlyMetadata, skip, limit);
@@ -76,7 +76,7 @@ export class DatafileController extends Controller {
   @Response<NotFoundError>(404, "Not found")
   @SuccessResponse(200, "Datafile found.")
   public async getDatafile(
-    @Path() documentId: MongooseObjectId
+    @Path() documentId: MongooseObjectId,
   ): Promise<Datafile> {
     this.setStatus(200);
     return this.datafileService.get(documentId);
@@ -91,7 +91,7 @@ export class DatafileController extends Controller {
   @SuccessResponse(200, "Created successfully.") // Custom success response
   @Post()
   public async createDatafile(
-    @Body() body: DatafileCreateParams
+    @Body() body: DatafileCreateParams,
   ): Promise<Datafile> {
     this.setStatus(200);
     return this.datafileService.create(body);
@@ -118,7 +118,7 @@ export class DatafileController extends Controller {
   public async createDatafileFromFile(
     @UploadedFile() file: Express.Multer.File,
     @Path() documentID: MongooseObjectId,
-    @FormField() fileType: SupportedRawFileTypes
+    @FormField() fileType: SupportedRawFileTypes,
   ): Promise<Datafile> {
     this.setStatus(200);
     return this.datafileService.attachFile(file, documentID, fileType);
@@ -143,7 +143,7 @@ export class DatafileController extends Controller {
     @FormField() dataset: SupportedDatasetFileTypes,
     @FormField() tags?: string,
     @FormField() description?: string,
-    @FormField() steps?: string
+    @FormField() steps?: string,
   ): Promise<Datafile[]> {
     this.setStatus(200);
     return this.datafileService.createFromFile(
@@ -151,7 +151,7 @@ export class DatafileController extends Controller {
       dataset,
       tags,
       description,
-      steps
+      steps,
     );
   }
 
@@ -166,7 +166,7 @@ export class DatafileController extends Controller {
   @Response<NotFoundError>(404, "Not found")
   @SuccessResponse(200, "Deleted successfully.")
   public async deleteDatafile(
-    @Path() documentId: MongooseObjectId
+    @Path() documentId: MongooseObjectId,
   ): Promise<Datafile> {
     this.setStatus(200);
     return this.datafileService.delete(documentId);
@@ -181,7 +181,7 @@ export class DatafileController extends Controller {
   @Post("deleteMany")
   @SuccessResponse(200, "Deleted successfully.")
   public async deleteManyDatafiles(
-    @Body() body: DeleteManyParam
+    @Body() body: DeleteManyParam,
   ): Promise<Datafile[]> {
     this.setStatus(200);
     return this.datafileService.deleteMany(body);
@@ -200,7 +200,7 @@ export class DatafileController extends Controller {
   @SuccessResponse(200, "Updated successfully.")
   public async updateDatafile(
     @Path() documentId: MongooseObjectId,
-    @Body() body: DatafileUpdateParams
+    @Body() body: DatafileUpdateParams,
   ): Promise<Datafile> {
     this.setStatus(200);
     return this.datafileService.update(documentId, body);
@@ -222,7 +222,7 @@ export class DatafileController extends Controller {
     @Body() body: FilterSetParams,
     @Path() skip: number,
     @Path() limit: number,
-    @Path() onlyMetadata: boolean
+    @Path() onlyMetadata: boolean,
   ): Promise<PaginationResult<Datafile>> {
     this.setStatus(200);
     return this.datafileService.getFiltered(body, skip, limit, onlyMetadata);
@@ -241,7 +241,7 @@ export class DatafileController extends Controller {
   @Response<NotFoundError>(404, "Document not found")
   public async getNestedValue(
     @Path() documentId: MongooseObjectId,
-    @Path() path: string
+    @Path() path: string,
   ): Promise<unknown> {
     this.setStatus(200);
     return this.datafileService.getNestedValue(documentId, path);
@@ -258,7 +258,7 @@ export class DatafileController extends Controller {
   @SuccessResponse(200, "Returned deleted value value.")
   @Response<NotFoundError>(404, "Document not found")
   public async deleteNestedValue(
-    @Body() requestBody: NestedValueDeleteParams
+    @Body() requestBody: NestedValueDeleteParams,
   ): Promise<Datafile[]> {
     const { IDs, path } = requestBody;
     this.setStatus(200);
@@ -276,7 +276,7 @@ export class DatafileController extends Controller {
   @SuccessResponse(200, "Added the new value.")
   @Response<NotFoundError>(404, "Document not found")
   public async updateNestedValue(
-    @Body() requestBody: NestedValueUpdateParams
+    @Body() requestBody: NestedValueUpdateParams,
   ): Promise<Datafile[]> {
     const { IDs, path, value } = requestBody;
     this.setStatus(200);

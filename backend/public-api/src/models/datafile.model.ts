@@ -43,9 +43,10 @@ const DatafileSchema = new Schema<Datafile>(
       },
       location: {
         coordinates: {
-          type: Array<number>,
-          length: 2,
+          type: [Number],
           index: true,
+          // Do not create an empty `location` for datafiles without coordinates
+          default: undefined,
         },
         type: {
           type: String,
@@ -60,7 +61,7 @@ const DatafileSchema = new Schema<Datafile>(
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model<Datafile>("Datafile", DatafileSchema, "datafiles");

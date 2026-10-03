@@ -1,6 +1,6 @@
-import streamifier from "streamifier";
-import csv from "csv-parse";
-import { JsonObject } from "swagger-ui-express";
+import { Readable } from "node:stream";
+import { parse } from "csv-parse";
+import { JsonObject } from "../../../../../common/types";
 
 import { FailedToParseError } from "../../errors";
 
@@ -14,7 +14,7 @@ export function handleJSONFile(file: Express.Multer.File): JsonObject {
   try {
     const jsonObject = JSON.parse(file.buffer.toString());
     return jsonObject;
-  } catch (error) {
+  } catch {
     throw new FailedToParseError("Failed to parse provided JSON file.");
   }
 }
@@ -27,7 +27,7 @@ export function handleJSONFile(file: Express.Multer.File): JsonObject {
  * @returns Final Datafile object
  */
 export async function handleCSVFile(
-  file: Express.Multer.File
+  file: Express.Multer.File,
 ): Promise<JsonObject> {
   // Return the array of parsed JSON objects
   const dataRows = await readCSV(file);
@@ -41,25 +41,20 @@ export async function handleCSVFile(
  */
 async function readCSV(file: Express.Multer.File): Promise<JsonObject> {
   return new Promise<JsonObject>((resolve, reject) => {
-    try {
-      const dataRows: JsonObject = [];
-      // Parse the CSV file
-      streamifier
-        // Transform the multer file into file stream
-        .createReadStream(file.buffer)
-        // Parse each line into JSON object, skipping the header
-        .pipe(csv.parse({ columns: true }))
-        // Append the data to the array
-        .on("data", (row) => {
-          dataRows.push(row);
-        })
-        // On end of file
-        .on("end", () => {
-          resolve(dataRows);
-        });
-    } catch {
-      reject(new FailedToParseError("Failed to parse CSV dataset file!"));
-    }
+    const dataRows: JsonObject[] = [];
+    // Transform the multer file into a stream and parse each line into a JSON object,
+    // using the first line as header
+    Readable.from([file.buffer])
+      .pipe(parse({ columns: true }))
+      .on("data", (row: JsonObject) => {
+        dataRows.push(row);
+      })
+      .on("error", () => {
+        reject(new FailedToParseError("Failed to parse provided CSV file."));
+      })
+      .on("end", () => {
+        resolve(dataRows);
+      });
   });
 }
 
@@ -73,7 +68,7 @@ export function handleTXTFile(file: Express.Multer.File): JsonObject {
   try {
     const jsonObject = { text: file.buffer.toString() };
     return jsonObject;
-  } catch (error) {
+  } catch {
     throw new FailedToParseError("Failed to parse provided TXT file.");
   }
 }

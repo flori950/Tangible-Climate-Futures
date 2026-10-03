@@ -1,5 +1,8 @@
-import { AreaFilter, RadiusFilter } from "../../../../../common/types";
-import { JsonObject } from "swagger-ui-express";
+import {
+  AreaFilter,
+  RadiusFilter,
+  JsonObject,
+} from "../../../../../common/types";
 
 /**
  * Handles the RADIUS filter operation

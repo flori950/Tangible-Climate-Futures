@@ -44,7 +44,7 @@ export default class JourneyService extends CrudService<
   async getFiltered(
     filterSetParams: FilterSetParams,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<PaginationResult<Journey>> {
     const jsonQueries: PipelineStage[] = [];
     filterSetParams.filterSet.forEach((filter: AnyFilter) => {

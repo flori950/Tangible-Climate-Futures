@@ -4,12 +4,12 @@ import compression from "compression";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
-import { RegisterRoutes } from "../build/routes";
 import swaggerUi from "swagger-ui-express";
+import { RegisterRoutes } from "../build/routes";
+import swaggerDocument from "../build/swagger.json";
 
 import config from "./config/config";
 import errorMiddleware from "./middlewares/error.middleware";
-import { json, urlencoded } from "body-parser";
 
 /**
  * Tangible Climate Futures Server App
@@ -30,50 +30,37 @@ class App {
    */
   private initializeMiddleware(): void {
     // Cors (Cross-Origin Resource Sharing)
-    const corsOptions = {
-      origin: "*",
-    };
-
-    this.express.use(cors(corsOptions)); // Apply CORS settings
-    this.express.use(morgan("dev")); // Add logging
-    this.express.use(compression()); // Add compression
-    this.express.use(helmet()); // Add security
-
-    this.express.use(
-      urlencoded({
-        extended: true,
-      })
-    );
-
-    this.express.use(json());
+    this.express.use(cors({ origin: "*" }));
+    // Request logging (silenced in tests)
+    if (process.env.NODE_ENV !== "test") {
+      this.express.use(morgan("dev"));
+    }
+    this.express.use(compression());
+    this.express.use(helmet());
+    // Body parsing (built into Express since 4.16, body-parser is not needed)
+    this.express.use(express.urlencoded({ extended: true }));
+    this.express.use(express.json());
   }
 
   // initialize Database Connection
-  private initializeDatabaseConnection(): Promise<void> {
+  private async initializeDatabaseConnection(): Promise<void> {
     const { MONGODB_URL } = config;
 
     // register disconnect when exiting the app
     process.on("SIGINT", async () => {
       await mongoose.connection.close();
-      console.log("Disconnect to the database");
+      console.log("Disconnected from the database");
       process.exit(0);
     });
 
-    // connect to database
-    return mongoose
-      .connect(MONGODB_URL)
-      .then(() => {
-        console.log("Connected to the database at: %s", MONGODB_URL);
-      })
-      .catch((error: Error) => {
-        console.log(
-          "Cannot connect to the database at %s!",
-          MONGODB_URL,
-          error
-        );
-        // Terminate the container
-        process.exit();
-      });
+    try {
+      await mongoose.connect(MONGODB_URL);
+      console.log("Connected to the database.");
+    } catch (error) {
+      console.error("Cannot connect to the database!", error);
+      // Terminate the process/container
+      process.exit(1);
+    }
   }
 
   // Generates routes and initializes Swagger documentation.
@@ -82,16 +69,12 @@ class App {
     this.express.use(
       "/docs",
       swaggerUi.serve,
-      async (_req: Request, res: Response) => {
-        return res.send(
-          swaggerUi.generateHTML(await import("../build/swagger.json"))
-        );
-      }
+      swaggerUi.setup(swaggerDocument),
     );
 
     // register route for health check
-    this.express.use("/health", async (_req: Request, res: Response) => {
-      return res.status(200).json({
+    this.express.get("/health", (_req: Request, res: Response) => {
+      res.status(200).json({
         status: "healthy",
       });
     });
@@ -115,14 +98,16 @@ class App {
     return new Promise((resolve) =>
       this.express.listen(PORT, () => {
         console.log(`Api is running on http://${HOST}:${PORT}/api`);
-        console.log(`Documention is running on http://${HOST}:${PORT}/docs`);
+        console.log(`Documentation is running on http://${HOST}:${PORT}/docs`);
         console.log(`Health check is running on http://${HOST}:${PORT}/health`);
         if (DISABLE_SWAGGER_AUTH) {
-          console.warn("Swagger authentication is disabled!");
+          console.warn(
+            "Authentication is disabled for ALL endpoints (DISABLE_SWAGGER_AUTH=true)!",
+          );
         }
 
         resolve();
-      })
+      }),
     );
   }
 

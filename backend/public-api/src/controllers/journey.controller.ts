@@ -46,7 +46,7 @@ export class JourneyController extends Controller {
   @SuccessResponse(200, "Sent all journeys.")
   public async getAllJourneys(
     @Path() skip: number,
-    @Path() limit: number
+    @Path() limit: number,
   ): Promise<PaginationResult<Journey>> {
     this.setStatus(200);
     return this.journeyService.getAll(skip, limit);
@@ -63,7 +63,7 @@ export class JourneyController extends Controller {
   @Response<NotFoundError>(404, "Not found")
   @SuccessResponse(200, "Journey found.")
   public async getJourney(
-    @Path() journeyId: MongooseObjectId
+    @Path() journeyId: MongooseObjectId,
   ): Promise<Journey> {
     this.setStatus(200);
     return this.journeyService.get(journeyId);
@@ -78,7 +78,7 @@ export class JourneyController extends Controller {
   @SuccessResponse(200, "Created successfully.")
   @Post()
   public async createJourney(
-    @Body() body: JourneyCreateParams
+    @Body() body: JourneyCreateParams,
   ): Promise<Journey> {
     this.setStatus(200);
     return this.journeyService.create(body);
@@ -95,7 +95,7 @@ export class JourneyController extends Controller {
   @Response<NotFoundError>(404, "Not found")
   @SuccessResponse(200, "Deleted successfully.")
   public async deleteJourney(
-    @Path() journeyId: MongooseObjectId
+    @Path() journeyId: MongooseObjectId,
   ): Promise<Journey> {
     this.setStatus(200);
     return this.journeyService.delete(journeyId);
@@ -110,7 +110,7 @@ export class JourneyController extends Controller {
   @Post("deleteMany")
   @SuccessResponse(200, "Deleted successfully.")
   public async deleteManyDatafiles(
-    @Body() body: DeleteManyParam
+    @Body() body: DeleteManyParam,
   ): Promise<Journey[]> {
     this.setStatus(200);
     return this.journeyService.deleteMany(body);
@@ -129,7 +129,7 @@ export class JourneyController extends Controller {
   @SuccessResponse(200, "Updated successfully.")
   public async updateJourney(
     @Path() journeyId: MongooseObjectId,
-    @Body() body: JourneyUpdateParams
+    @Body() body: JourneyUpdateParams,
   ): Promise<Journey> {
     this.setStatus(200);
     return this.journeyService.update(journeyId, body);
@@ -150,7 +150,7 @@ export class JourneyController extends Controller {
   public async filterJourneys(
     @Path() skip: number,
     @Path() limit: number,
-    @Body() body: FilterSetParams
+    @Body() body: FilterSetParams,
   ): Promise<PaginationResult<Journey>> {
     this.setStatus(200);
     return this.journeyService.getFiltered(body, skip, limit);

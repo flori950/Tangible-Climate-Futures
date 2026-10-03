@@ -81,7 +81,7 @@ export function createBasicFilterQuery(filter: Filter): JsonObject {
  * @returns MongoDB query
  */
 export function createConcatenationFilterQuery(
-  concatenationFilter: ConcatenationFilter
+  concatenationFilter: ConcatenationFilter,
 ): JsonObject {
   if (
     concatenationFilter.booleanOperation === BooleanOperation.AND ||

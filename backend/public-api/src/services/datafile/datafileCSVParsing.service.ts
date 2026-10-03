@@ -1,116 +1,99 @@
-import { v4 as uuidv4 } from "uuid";
-import { JsonObject } from "swagger-ui-express";
-import streamifier from "streamifier";
-import csv from "csv-parse";
-import { Readable } from "stream";
+import { randomUUID } from "node:crypto";
+import { Readable } from "node:stream";
+import { parse } from "csv-parse";
+import { Model } from "mongoose";
 import { FailedToParseError } from "../../errors";
+import { toPointLocation } from "../../utils/utils";
 import {
   Datafile,
+  DataType,
+  JsonObject,
   SupportedDatasetFileTypes,
 } from "../../../../../common/types";
-import { Model } from "mongoose";
 
 /**
- * Handle files from the CSV dataset
+ * Handle files from the CSV dataset.
+ * Every row of the CSV file becomes one NOTREFERENCED datafile. The CSV needs a header
+ * line; the columns `lon` and `lat` are used as the location of the datapoint.
  *
  * @param file - The CSV file to create a datafile objects from.
  * @param model - The MongoDB Schema (model) for which to create the documents
  * @param tags - [Optional] The tags to be appended to all created documents, seperated by commas.
  * @param description - [Optional] The description to be added to all created documents.
- * @returns Final Datafile object
- * @throws Error when line reader fails
+ * @returns All created Datafile documents
+ * @throws FailedToParseError when the CSV file cannot be parsed
  */
 export async function handleCSVDatasetFile(
   file: Express.Multer.File,
   model: Readonly<Model<Datafile>>,
   tags?: string,
-  description?: string
+  description?: string,
 ): Promise<Datafile[]> {
-  let documents: Datafile[] = [];
-  const fs = streamifier.createReadStream(file.buffer);
   // Prepare tags
-  let tagsArray = tags?.split(",");
-  if (tagsArray !== undefined) {
-    tagsArray = tagsArray.map((tag) => {
-      return tag.trim();
-    });
-  }
+  const tagsArray = tags?.split(",").map((tag) => tag.trim());
   // Create uploadID
-  const uploadID = uuidv4();
+  const uploadID = randomUUID();
   // Create datapoint documents
   const dataObjects = await createCSVDatapointObjects(
     file,
-    fs,
     uploadID,
     tagsArray,
-    description
+    description,
   );
-  const dataDocuments = await model.create(dataObjects);
-  documents = documents.concat(dataDocuments);
-  // Return the array of parsed JSON objects
-  return documents;
+  if (dataObjects.length === 0) {
+    return [];
+  }
+  return (await model.create(dataObjects)) as unknown as Datafile[];
 }
 
 /**
  *  Returns an array of all datapoints documents.
  *
- * @param file the simra file
- * @param fs file stream
- * @param headerLine the index of the header line
- * @param versionInfo a string representing the version information for all datapoints documents
- * @param uploadId the upload ID for this SimRa file
- * @param tags - [Optional] The tags to be appended to all created documents, seperated by commas.
+ * @param file the CSV file
+ * @param uploadID the upload ID for this CSV file
+ * @param tags - [Optional] The tags to be appended to all created documents.
  * @param description - [Optional] The description to be added to all created documents.
  * @returns array of MongoDB documents
  */
-async function createCSVDatapointObjects(
+function createCSVDatapointObjects(
   file: Express.Multer.File,
-  fs: Readable,
   uploadID: string,
   tags?: string[],
-  description?: string
+  description?: string,
 ): Promise<JsonObject[]> {
   return new Promise<JsonObject[]>((resolve, reject) => {
-    try {
-      let dataID = 0;
-      const documents: JsonObject[] = [];
-      // Prepare all necessary data
-      let finalTags = ["CSV", "datapoint", `${file.originalname}`];
-      if (tags) {
-        finalTags = finalTags.concat(tags);
-      }
-      const finalDescription = description
-        ? description
-        : `A datapoint no.${dataID} from CSV dataset file: ${file.originalname}`;
-      // Search the headerline
-      fs.pipe(csv.parse({ columns: true }))
-        // Append the data to the array
-        .on("data", (dataObject: JsonObject) => {
-          const document = {
-            title: `${file.originalname}_${dataID}`,
-            description: finalDescription,
-            dataType: "NOTREFERENCED",
-            uploadID: uploadID,
-            tags: finalTags,
-            dataSet: SupportedDatasetFileTypes.SIMRA,
-            content: {
-              data: dataObject,
-              location: {
-                type: "Point",
-                coordinates: [dataObject.lon, dataObject.lat],
-              },
-            },
-          };
-          documents.push(document);
-          dataID++;
-        })
-        .on("end", () => {
-          resolve(documents);
-        });
-    } catch (error) {
-      reject(
-        new FailedToParseError("Failed to create SimRa datapoint documents!")
-      );
+    let dataID = 0;
+    const documents: JsonObject[] = [];
+    // Prepare all necessary data
+    let finalTags = ["CSV", "datapoint", `${file.originalname}`];
+    if (tags) {
+      finalTags = finalTags.concat(tags);
     }
+    Readable.from([file.buffer])
+      .pipe(parse({ columns: true }))
+      // Append the data to the array
+      .on("data", (dataObject: JsonObject) => {
+        documents.push({
+          title: `${file.originalname}_${dataID}`,
+          description:
+            description ??
+            `A datapoint no.${dataID} from CSV dataset file: ${file.originalname}`,
+          dataType: DataType.NOTREFERENCED,
+          uploadID: uploadID,
+          tags: finalTags,
+          dataSet: SupportedDatasetFileTypes.CSV,
+          content: {
+            data: dataObject,
+            location: toPointLocation(dataObject.lon, dataObject.lat),
+          },
+        });
+        dataID++;
+      })
+      .on("error", () => {
+        reject(new FailedToParseError("Failed to parse the CSV dataset file!"));
+      })
+      .on("end", () => {
+        resolve(documents);
+      });
   });
 }

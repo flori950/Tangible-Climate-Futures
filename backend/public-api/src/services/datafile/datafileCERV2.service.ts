@@ -1,8 +1,9 @@
 /**
  * Module containing functions and utilities for handling CERV2 dataset files.
  */
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import {
+  JsonObject,
   SupportedDatasetFileTypes,
   NotRefDataFile,
   DataType,
@@ -22,9 +23,9 @@ export async function handleCERV2File(
   file: Express.Multer.File,
   tags = "",
   stepSize = 10,
-  description?: string
+  description?: string,
 ) {
-  const uploadId = uuidv4();
+  const uploadId = randomUUID();
 
   // Retrieve metadata from the NetCDF file
   const metadata = await NetcdfApi.getMetaData(file);
@@ -43,7 +44,7 @@ export async function handleCERV2File(
     stepSize,
     tagList,
     uploadId,
-    description
+    description,
   )) {
     // Create and store datafiles in the database
     await datafileModel.create(datafile);
@@ -64,12 +65,12 @@ export async function handleCERV2File(
  */
 async function* createDatafiles(
   file: Express.Multer.File,
-  metadata: any,
+  metadata: JsonObject,
   locationVariableNames: string[],
   stepSize: number,
   tags: string[],
   uploadID: string,
-  description?: string
+  description?: string,
 ) {
   const cerv2_var_gen = await NetcdfApi.getCERv2DataChunks(file, {
     filter: locationVariableNames,
@@ -78,7 +79,6 @@ async function* createDatafiles(
 
   let dataId = 0;
   for await (const data of cerv2_var_gen) {
-    description ??= `A datapoint no.${dataId} from CERV2 dataset file: ${file.originalname}`;
     const { lon, lat, ...remainingVars } = data["vars"];
     if (lon === undefined) {
       throw new Error("no longitude in dataset defined");
@@ -89,7 +89,9 @@ async function* createDatafiles(
 
     const datafile: NotRefDataFile = {
       title: `${file.originalname}_${dataId}`,
-      description: description,
+      description:
+        description ??
+        `A datapoint no.${dataId} from CERV2 dataset file: ${file.originalname}`,
       dataType: DataType.NOTREFERENCED,
       dataSet: SupportedDatasetFileTypes.CERV2,
       tags: ["CERv2", ...tags, ...locationVariableNames],
@@ -117,12 +119,14 @@ async function* createDatafiles(
  * @param metadata - Metadata extracted from the NetCDF file.
  * @returns {string[]} - List of variable names containing location data.
  */
-export function getVariablesNamesWithLocationData(metadata: any): string[] {
+export function getVariablesNamesWithLocationData(
+  metadata: JsonObject,
+): string[] {
   // get variable names
   const locationVariableNames = [];
 
-  for (const [variable_name, variable_value] of Object.entries<any>(
-    metadata["variables_metadata"]
+  for (const [variable_name, variable_value] of Object.entries<JsonObject>(
+    metadata["variables_metadata"],
   )) {
     if (
       variable_value["dimensions"].includes("south_north") &&

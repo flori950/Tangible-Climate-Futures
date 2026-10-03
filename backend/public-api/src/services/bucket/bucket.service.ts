@@ -1,14 +1,30 @@
-import { mongo, connections } from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 /**
  * A service for managing file operations using GridFSBucket.
+ * Files are stored as JSON strings inside the MongoDB database Mongoose is connected to.
  */
 export abstract class BucketService {
-  protected readonly db = connections[0].db; // MongoDB database connection
-  protected bucket: mongo.GridFSBucket; // GridFSBucket instance for file operations
+  private gridFsBucket?: mongo.GridFSBucket;
 
-  constructor(bucketName = "default") {
-    this.bucket = new mongo.GridFSBucket(this.db, { bucketName: bucketName });
+  constructor(protected readonly bucketName = "default") {}
+
+  /**
+   * The GridFSBucket instance, created lazily so that the service can be
+   * instantiated before the Mongoose connection is open.
+   * @throws Error if Mongoose is not connected.
+   */
+  protected get bucket(): mongo.GridFSBucket {
+    if (!this.gridFsBucket) {
+      const db = mongoose.connection.db;
+      if (!db) {
+        throw new Error("GridFS bucket requires an open MongoDB connection.");
+      }
+      this.gridFsBucket = new mongo.GridFSBucket(db, {
+        bucketName: this.bucketName,
+      });
+    }
+    return this.gridFsBucket;
   }
 
   /**
@@ -17,68 +33,59 @@ export abstract class BucketService {
    * @returns A Promise that resolves to true when all files are deleted successfully.
    */
   async deleteFilesByName(name: string): Promise<boolean> {
-    const fileList = await this.bucket.find({ filename: name }).toArray(); // Find files with a specific name
+    const fileList = await this.bucket.find({ filename: name }).toArray();
 
     for (const file of fileList) {
-      await this.bucket.delete(file._id); // Delete each file by its ObjectId
+      await this.bucket.delete(file._id);
     }
 
-    return true; // Return true when all files are deleted
+    return true;
   }
 
   /**
-   * Uploads a file to the GridFSBucket.
+   * Uploads a file to the GridFSBucket (serialized with JSON.stringify).
    * If a file with the same name already exists, it is deleted before uploading the new file.
    * @param filename - The name of the file to upload.
    * @param file - The file content to upload.
-   * @param contentType - The MIME type of the file.
-   * @returns A Promise that resolves to the ObjectId of the uploaded file, or undefined if the upload fails.
+   * @param contentType - The MIME type of the file (stored in the file's metadata).
+   * @returns A Promise that resolves to the ObjectId (as string) of the uploaded file.
    */
   async uploadFile(
     filename: string,
     file: unknown,
-    contentType?: string
+    contentType?: string,
   ): Promise<string | undefined> {
-    await this.deleteFilesByName(filename); // Delete existing files with the same name
+    await this.deleteFilesByName(filename);
 
     return new Promise((resolve, reject) => {
       const uploadStream = this.bucket.openUploadStream(filename, {
-        contentType,
-      }); // Create an upload stream for the new file
-      uploadStream.write(JSON.stringify(file), "utf8"); // Write the file content to the upload stream
-      uploadStream.end((error, result) => {
-        if (error) {
-          reject(error); // Reject the Promise if an error occurs during the upload
-        } else {
-          if (result) {
-            console.log("Result ", result);
-            console.log("ResultId ", result._id);
-            resolve(String(result._id as unknown)); // Resolve the Promise with the ObjectId of the uploaded file
-          } else {
-            resolve(undefined); // Resolve the Promise with undefined if the upload result is missing
-          }
-        }
+        metadata: contentType ? { contentType } : undefined,
       });
+      uploadStream.once("error", reject);
+      uploadStream.once("finish", () => resolve(String(uploadStream.id)));
+      uploadStream.end(JSON.stringify(file), "utf8");
     });
   }
 
   /**
-   * Downloads a file from the GridFSBucket by its ObjectId.
+   * Downloads a file from the GridFSBucket by its name.
    * @param filename - The name of the file to download.
-   * @returns A Promise that resolves to the parsed content of the downloaded file.
+   * @returns A Promise that resolves to the parsed (JSON) content of the downloaded file.
    */
   downloadFile(filename: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      const downloadStream = this.bucket.openDownloadStreamByName(filename); // Create a download stream for the file
-      let file = "";
-      downloadStream.on("data", (chunk) => {
-        file += chunk.toString(); // Concatenate the chunks of data into a string
+      const downloadStream = this.bucket.openDownloadStreamByName(filename);
+      const chunks: Buffer[] = [];
+      downloadStream.on("data", (chunk: Buffer) => {
+        chunks.push(chunk);
       });
-      downloadStream.on("error", (error) => {
-        reject(error); // Reject the Promise if an error occurs during the download
-      });
+      downloadStream.on("error", reject);
       downloadStream.on("end", () => {
-        resolve(JSON.parse(file)); // Resolve the Promise with the parsed content of the downloaded file
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+        } catch (error) {
+          reject(error);
+        }
       });
     });
   }

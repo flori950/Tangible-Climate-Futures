@@ -38,7 +38,7 @@ const JourneySchema = new Schema<Journey>(
       required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model<Journey>("Journey", JourneySchema, "journeys");

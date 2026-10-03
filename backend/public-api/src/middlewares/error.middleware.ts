@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ValidateError } from "tsoa";
+import mongoose from "mongoose";
 import {
   FailedToParseError,
   NotFoundError,
@@ -7,10 +8,9 @@ import {
   WrongObjectTypeError,
   UnauthorizedError,
 } from "../errors";
-import mongoose from "mongoose";
 
 /**
- * Handles thrown errors in the BE.
+ * Handles thrown errors in the BE and maps them to HTTP responses.
  * @param err the thrown error
  * @param req the HTTP Request
  * @param res the HTTP Response
@@ -21,10 +21,14 @@ function errorMiddleware(
   err: unknown,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Response | void {
+  // If the response is already being sent, let Express close the connection.
+  if (res.headersSent) {
+    return next(err);
+  }
   if (err instanceof ValidateError) {
-    // Instance of a TypeScript validation error
+    // Instance of a tsoa (TypeScript) validation error
     console.warn(`Caught Validation Error for ${req.path}:`, err.fields);
     return res.status(422).json({
       message: err.message ? err.message : "TypeScript Validation Failed",
@@ -78,7 +82,11 @@ function errorMiddleware(
       details: "Look at the console for more details.",
     });
   }
-  next();
+  // Anything else that was thrown (e.g. a plain object or string)
+  console.warn(`Caught unknown error for ${req.path}:`, err);
+  return res.status(500).json({
+    message: "Internal Server Error",
+  });
 }
 
 export default errorMiddleware;
