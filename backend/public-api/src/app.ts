@@ -134,12 +134,20 @@ class App {
   public async shutdown(signal: string): Promise<void> {
     console.log(`${signal} received, shutting down.`);
     // Force exit if open connections keep the server alive for too long
-    setTimeout(() => process.exit(1), 10_000).unref();
-    if (this.server) {
-      await new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    const forceExit = setTimeout(() => process.exit(1), 10_000);
+    forceExit.unref();
+    try {
+      if (this.server) {
+        await new Promise<void>((resolve) =>
+          this.server!.close(() => resolve()),
+        );
+      }
+      await mongoose.connection.close();
+      console.log("Disconnected from the database");
+    } finally {
+      // A clean shutdown must not leave the watchdog behind
+      clearTimeout(forceExit);
     }
-    await mongoose.connection.close();
-    console.log("Disconnected from the database");
     process.exit(0);
   }
 

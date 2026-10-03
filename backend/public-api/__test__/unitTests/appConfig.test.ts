@@ -87,8 +87,13 @@ describe("App settings", () => {
       .spyOn(mongoose.connection, "close")
       .mockResolvedValue(undefined);
     jest.spyOn(console, "log").mockImplementation(() => undefined);
+    const clear = jest.spyOn(global, "clearTimeout");
     await app.shutdown("SIGTERM");
     expect(close).toHaveBeenCalled();
     expect(exit).toHaveBeenCalledWith(0);
+    // Regression: the 10 s force-exit watchdog must be cleared after a clean
+    // shutdown, otherwise it later kills whatever runs in the same process.
+    expect(clear).toHaveBeenCalled();
+    expect(exit).not.toHaveBeenCalledWith(1);
   });
 });
