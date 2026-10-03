@@ -1,107 +1,115 @@
-# Welcome to the SS23_ADSP_TCF Repository!
+# Tangible Climate Futures
 
-> **About this fork:** This is Florian Jäger's fork of [Corgam/SS23_ADSP_TCF](https://github.com/Corgam/SS23_ADSP_TCF), the team repository of the TU Berlin course *(Advanced) Distributed Systems Prototyping*, summer term 2023, built with the UdK Berlin team. My part was the Angular frontend: the map view, translations, the header, file upload, address lookup, the upload workflow and the Browse Journeys page. The production values in `.env` are placeholders; set your own before deploying.
+> **About this fork:** This is Florian Jäger's fork of [Corgam/SS23_ADSP_TCF](https://github.com/Corgam/SS23_ADSP_TCF), the team repository of the TU Berlin course *(Advanced) Distributed Systems Prototyping*, summer term 2023, built for and with the UdK Berlin team. My part in 2023 was the Angular frontend: the map view, translations, the header, file upload, address lookup, the upload workflow and the Browse Journeys page. In October 2026 the fork was brought up to date: all three services on current major versions, test suites that run again, CI for every part and a README in every directory. The production values in `.env` are placeholders; set your own before deploying.
 
-This is an official repository for the `Tangible Climate Futures` project for the `(Advanced) Distributed Systems Prototyping SS23` course at TU Berlin. The description and the structure of our project, together with a detailed structure of implemented JSON objects, can be found in our [wiki](https://github.com/Corgam/SS23_ADSP_TCF/wiki).
+A data-fusion platform for spatio-temporal climate and city data. Researchers and artists upload data points (files, media links, free text) with a location, filter them by text, numbers, booleans, radius or polygon, and combine filtered sets into **Journeys** that can be explored on a map, in a media gallery and in a 3D city model, saved, forked and downloaded.
 
-Project Developers:
+Original team: **Simon Albani** (frontend, authentication), **Emil Balitzki** (backend: public API, MongoDB, filtering), **Theodor Barkow** (frontend, team lead), **Alexander Guttenberger** (backend: public API, Python), **Florian Jäger** (frontend), **Frederik Stalschus** (development features and deployment, Python backend). Supervision at TU Berlin: Ahmet-Serdar Karakaya and David Bermbach. The project wiki of the original repository describes the JSON objects in detail: <https://github.com/Corgam/SS23_ADSP_TCF/wiki>.
 
-- **Simon Albani** (Frontend, User Authentication)
-- **Emil Balitzki** (Backend: Public-API, MongoDB, Filtering)
-- **Theodor Barkow** (Frontend, Team Leader)
-- **Alexander Guttenberger** (Backend: Public-API, Python)
-- **Florian Jäger** (Frontend)
-- **Frederik Stalschus** (Development Features & Deployment, Backend: Python)
+## Architecture
 
-# Project Deployment
+```
+Browser ──► frontend (Angular 22, :8080) ──► public-api (Express 5 + tsoa, :40000) ──► MongoDB 8 (:27017, GridFS for NetCDF files)
+                 │                                   │
+                 └── Firebase Auth (ID token) ───────┤ verifies the token (firebase-admin)
+                                                     └──► data-science (Flask 3, :50000): NetCDF / CERV2 → JSON chunks
+```
 
-Our Project can be deployed in multiple ways, including full-Docker deployment, developer deployment, and on the Google Cloud Platform (using Terraform).
+| Part | Path | Stack | Tests | README |
+|---|---|---|---|---|
+| Frontend | `frontend/` | Angular 22, Angular Material, OpenLayers 10, three.js, ngx-translate, AngularFire | Vitest (jsdom), 156 tests | `frontend/README.md` |
+| Public API | `backend/public-api/` | Node 24, Express 5, tsoa 6.6 (OpenAPI + routes), Mongoose 9, firebase-admin 14, multer 2 | Jest 30 + in-memory MongoDB, 136 tests | `backend/public-api/README.md` |
+| Data-science service | `backend/data-science/` | Python 3.13, Flask 3.1, flask-restx, netCDF4, numpy 2, gunicorn | pytest, 68 tests, 99 % branch coverage | `backend/data-science/README.md` |
+| Shared types | `common/types/` | TypeScript types used by frontend and API | (covered by both) | `common/README.md` |
+| Helper scripts | `scripts/` | Mongo seed/cleanup, evaluation | | `scripts/README.md` |
+| Deployment | `deploy/` | Terraform for one GCE VM running `production.docker-compose.yml` | | `deploy/README.md` |
+| CI | `.github/` | GitHub Actions: one workflow per part plus a Docker Compose health check | | `.github/README.md` |
 
-Setup:
+## Requirements
 
-1. Install Git (Ubuntu: `sudo apt update && sudo apt install git`).
-2. Clone this repository (`git clone https://github.com/Corgam/SS23_ADSP_TCF`).
-3. Go the the root folder (Ubuntu: `cd SS23_ADSP_TCF`) and run the .sh script (Ubuntu: `sh setup.sh`, do not use sudo).
-4. Please restart your terminal for the changes to take effect. If you're running Linux in a virtual machine, it may be necessary to restart the virtual machine for changes to take effect.
-5. Inside `frontend/src/environments/` folder, fill in the Firebase API keys for web applications in files: `environment.ts` and `environment.development.ts` (For a detailed guide follow: https://firebase.google.com/docs/projects/api-keys?hl=en). Remember to enable Email Authentication inside Firebase.
-6. Run the `npm run setup` command inside the root folder, this will install all necessary npm packages.
+- Node.js **24 LTS** (the public API's firebase-admin does not load on Node ≥ 25; see `backend/public-api/README.md`)
+- Python **3.12+** (3.13 recommended)
+- Docker with the Compose plugin for the full-stack setup
+- A Firebase project with Email/Password authentication, and its web config in `frontend/src/environments/environment*.ts`
 
-Note: We use `.sh` script for automatic setup. In case of errors, or manual installation, follow the steps descripted in the `setup.sh` file.
+## Configuration
 
-## Docker Deployment
+All ports and hosts live in the root `.env`, which Docker Compose reads:
 
-The full-Docker deployment is the recommended way for using the application, where all of the components are deployed as individual Docker containers. If you are a developer, you can use the Developer Deployment described in the section below. While we have tested this deployment on a clean `Ubuntu 22.04 LTS (Jammy Jellyfish, 64-bit)`, it should work on all machines with Docker installed.
+| Variable | Used by | Meaning |
+|---|---|---|
+| `STAGE` | public API | `development` / `production` |
+| `DISABLE_SWAGGER_AUTH` | public API | `true` disables token checks for the **whole API** (for local Swagger use only) |
+| `FIREBASE_PROJECT_ID` | public API | Firebase project whose ID tokens are accepted |
+| `ANGULAR_FRONTEND_PORT` | frontend | default 8080 |
+| `EXPRESS_BACKEND_HOST` / `_PORT` | public API | default `localhost:40000` |
+| `PYTHON_BACKEND_HOST` / `_PORT` | public API → data-science | default `localhost:50000` |
+| `MONGODB_PORT`, `MONGODB_URL` | public API (dev) | local MongoDB |
+| `PROD_MONGODB_USERNAME` / `_PASSWORD` / `_URL` | production compose | placeholders, set your own |
 
-1. Go to the root folder `cd SS23_ADSP_TCF` and run `npm run deploy`, which will deploy all necessary Docker containers (including FE, BE, and all microservices). Make sure that the Docker Service is running (`docker ps`).
+## Quick start
 
-Notes:
+### Everything in Docker
 
-- BE is located at `localhost:40000` with Swagger Docs at `localhost:40000/docs`
-- FE is located at `localhost:8080`
-- MongoDB is located at `localhost:27017` inside a Docker Container
-- Python Microservice is located at `localhost:50000` with Swagger Docs at `localhost:50000/docs`
+```bash
+docker compose up -d --build --wait
+# Frontend http://localhost:8080 · API http://localhost:40000 (Swagger /docs) · Python service http://localhost:50000 (Swagger /docs)
+docker compose down
+```
 
-## Developer Deployment (reduced-Docker)
+### Local development
 
-The developer deployment (or reduced-Docker) is a deployment recommended for developing the project. All components, except MongoDB, are deployed locally (no Docker containers) allowing for easier development (live reloading). This deployment was tested on a clean `Ubuntu 22.04 LTS (Jammy Jellyfish, 64-bit)`.
+```bash
+npm run setup            # npm ci in frontend + public-api, venv + pip install for data-science
+npm run deploy:mongo     # MongoDB in Docker
+npm run dev:ds           # Python service (Flask dev server, :50000)
+npm run dev:pub          # public API with nodemon (:40000)
+npm run dev:frontend     # Angular dev server (:8080)
+```
 
-1. Run `npm run dev:all` to run all components as the dev version (live reloading) as background processes. The MongoDB will be still deployed as a Docker container, thus make sure that the Docker Service is running (`docker ps`).
+## Testing and quality checks
 
-Notes:
+From the repository root:
 
-- BE is located at `localhost:40000` with Swagger Docs at `localhost:40000/docs`
-- FE is located at `localhost:8080`
-- MongoDB is located at `localhost:27017` inside a Docker Container
-- Python Microservice is located at `localhost:50000` with Swagger Docs at `localhost:50000/docs`
-- The processes for all components will be run in a single terminal, thus for easier development of individual components, use specific npm scripts, described at the bottom of the README. These scripts will allow for the deployment of individual services in separate terminals.
+```bash
+npm test                 # all three suites: frontend (Vitest), public API (Jest), data-science (pytest)
+npm run test:frontend
+npm run test:backend
+npm run test:python
+npm run lint             # angular-eslint, ESLint, ruff
+```
 
-## Cloud Deployment (GCP using Terraform)
+Per part (inside its folder): `npm run format:check` / `npm run format` (Prettier, frontend and API), `npm run typecheck` (API incl. tests), `npm run build`, `.venv/bin/ruff format --check .` (Python). CI runs exactly these steps, see `.github/README.md`.
 
-This cloud deployment will deploy our complete project on GCP using Terraform. It is intended to be used as a production-ready deployment, thus making the project publicly available.
+## Deployment
 
-1. First install the [Terraform](https://developer.hashicorp.com/terraform/downloads).
-2. Download the GCP access keys (be aware to not commit them) from [GCP](https://cloud.google.com/iam/docs/keys-create-delete) and save them as a JSON file on your machine.
-3. Create an environment variable `GOOGLE_APPLICATION_CREDENTIALS=/path/to/your/key.json`
-4. Inside `frontend/src/environments/` folder, fill in the Firebase API keys in files: `environment.ts` and `environment.development.ts`
-5. Inside our project, go to the `deploy` directory using `cd deploy`
-6. Setup your terraform environment with `terraform init`
-7. Apply the infrastructure with `terraform apply`, you can access the app under the provided above URLs.
-8. For shutdown use `terraform destroy`.
+`deploy/` contains the Terraform setup of the original 2023 production deployment on Google Cloud (one VM, Docker Compose, port 80). See `deploy/README.md` for the steps and the caveats; the original GCP project no longer exists.
 
-# Useful Scripts for MongoDB
+## MongoDB helper scripts
 
-Once the project is set up, and the MongoDB container is running, you can execute some helpful scripts:
+```bash
+python3 -m venv scripts/.venv && scripts/.venv/bin/pip install -r scripts/requirements.txt
+scripts/.venv/bin/python scripts/mongo/main.py seed --num-documents 20 --mongo-url mongodb://localhost:27017/datastore
+scripts/.venv/bin/python scripts/mongo/main.py cleanup --mongo-url mongodb://localhost:27017/datastore
+```
 
-Note: Make sure you have the MongoDB instance running.
+## Root npm scripts
 
-## Seed the Database with Random Data
+| Script | Does |
+|---|---|
+| `setup` / `setup:frontend` / `setup:backend` / `setup:python` | install dependencies (Python into `backend/data-science/.venv`) |
+| `deploy` | `docker compose up --build -d` (whole stack) |
+| `deploy:mongo` | only the MongoDB container |
+| `dev:frontend` / `dev:pub` / `dev:ds` | dev servers with live reload |
+| `dev:backend` | MongoDB + Python containers, public API in dev mode |
+| `dev:all` | MongoDB container + all three dev servers via `concurrently` |
+| `test`, `test:*`, `lint` | see above |
 
-To seed the database with random documents, use the following command `python3 scripts/mongo/main.py seed`
+## Known issues
 
-Options:
+Each part lists its own known issues in its README. The most important ones:
 
-- `--num-documents <int>` - the number of documents to seed (default 10).
-- `--mongo-url <string>`- the URL to the database (default `mongodb://localhost:27017/datastore`)
-- Example: `python3 scripts/mongo/main.py seed --num-documents 20 --mongo-url mongodb://localhost:27017/mydatabase`
-
-## Cleanup the Database
-
-To clean up the database, simply run the following command `python3 scripts/mongo/main.py cleanup --mongo-url <string>`
-
-- Example: `python3 scripts/mongo/main.py cleanup --mongo-url mongodb://localhost:27017/datastore`
-
-# NPM Scripts Documentation
-
-Here is a list and description of all npm scripts included in the main `package.json` file:
-
-- `npm run setup` - Installes all necessary npm packages, for both the FE and BE.
-- `npm run setup:frontend` - Installes all necessary npm packages for just the FE.
-- `npm run setup:backend` - Installes all necessary npm packages for just the BE.
-- `npm run setup:python` - Installes all required Python libraries for the Python Microservice.
-- `npm run deploy` - Deploys the whole app in Docker containers, including FE, BE, MongoDB, and Python Microservice.
-- `npm run deploy:mongo` - Deploys just the MongoDB Docker container.
-- `npm run dev:backend` - Deploys the MongoDB and Python Docker containers and the dev version (live reloading) of the BE.
-- `npm run dev:frontend` - Deploys the dev version (live reloading) of the FE.
-- `npm run dev:ds` - Deploys just the Python Microservice as the dev version (live reloading).
-- `npm run dev:pub` - Deploys just the BE as the dev version (live reloading).
-- `npm run dev:all` - Deploys the whole app as the dev version (live reloading) as background processes.
+- **AngularFire on Angular 22** only installs through npm `overrides`, and Firebase stays on 11.x until AngularFire supports Angular 22.
+- **Node ≥ 25:** firebase-admin crashes on import, so the API rejects every authenticated request. Use Node 24.
+- **No authorisation model:** any signed-in user can change any datafile and any journey, including private ones. CORS allows all origins, uploads have no size limit, and `CONTAINS` filters use user input as an unescaped regular expression.
+- **Docker images and Terraform** were updated but not built or applied in this environment (no Docker, no Terraform installed); CI builds the images.

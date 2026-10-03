@@ -1,19 +1,27 @@
 {
   "name": "adsp_tcf_project",
   "version": "1.0.0",
-  "description": "Main package file for the TCF Project",
+  "description": "Root scripts for the Tangible Climate Futures project (Angular frontend, Express public API, Python data-science service)",
   "author": "See repository readme",
   "scripts": {
     "setup": "npm run setup:frontend && npm run setup:backend && npm run setup:python",
     "setup:frontend": "cd frontend/ && npm ci",
     "setup:backend": "cd backend/public-api && npm ci && npm run build",
-    "setup:python": "cd backend/data-science && pipenv install",
+    "setup:python": "cd backend/data-science && python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt",
     "deploy": "docker compose up --build -d",
     "deploy:mongo": "docker compose up -d mongodb",
     "dev:backend": "docker compose up --build -d mongodb python-backend && cd backend/public-api && npm run dev",
     "dev:frontend": "cd frontend/ && npm run start",
-    "dev:ds": "cd backend/data-science && pipenv run start",
+    "dev:ds": "cd backend/data-science && .venv/bin/python main.py",
     "dev:pub": "cd backend/public-api && npm run dev",
-    "dev:all": "npm run deploy:mongo && npm exec --prefix backend/public-api concurrently \"npm run dev:ds\" \"npm run dev:pub\" \"npm run dev:frontend\""
+    "dev:all": "npm run deploy:mongo && npm exec --prefix backend/public-api concurrently \"npm run dev:ds\" \"npm run dev:pub\" \"npm run dev:frontend\"",
+    "test": "npm run test:frontend && npm run test:backend && npm run test:python",
+    "test:frontend": "cd frontend && npm run test:ci",
+    "test:backend": "cd backend/public-api && npm test",
+    "test:python": "cd backend/data-science && .venv/bin/python -m pytest",
+    "lint": "cd frontend && npm run lint && cd ../backend/public-api && npm run lint && cd ../data-science && .venv/bin/ruff check ."
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }
