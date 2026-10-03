@@ -1,11 +1,8 @@
 <div class="list-entry-container">
   <div>
-    <mat-checkbox
-      [required]="false"
-      [checked]="isSelected$ | async"
-      (change)="select($event)"
-      >{{ file.title }}</mat-checkbox
-    >
+    <mat-checkbox [required]="false" [checked]="isSelected$ | async" (change)="select($event)">{{
+      file.title
+    }}</mat-checkbox>
   </div>
   <div [matTooltip]="file.description || ''" matTooltipPositionAtOrigin>
     {{ file.description }}

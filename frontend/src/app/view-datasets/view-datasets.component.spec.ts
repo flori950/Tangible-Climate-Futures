@@ -9,7 +9,14 @@ import { ApiService } from '../shared/service/api.service';
 import { ViewDatasetsComponent } from './view-datasets.component';
 
 function datafile(id: string): Datafile {
-  return { _id: id, title: id, tags: [], dataSet: 'NONE', dataType: DataType.NOTREFERENCED, content: { data: {} } };
+  return {
+    _id: id,
+    title: id,
+    tags: [],
+    dataSet: 'NONE',
+    dataType: DataType.NOTREFERENCED,
+    content: { data: {} },
+  };
 }
 
 describe('ViewDatasetsComponent', () => {
@@ -19,8 +26,12 @@ describe('ViewDatasetsComponent', () => {
 
   beforeEach(() => {
     api = {
-      getDatafiles: vi.fn(() => of({ skip: 0, limit: 10, totalCount: 2, results: [datafile('a'), datafile('b')] })),
-      filterDatafiles: vi.fn(() => of({ skip: 0, limit: 10, totalCount: 1, results: [datafile('a')] })),
+      getDatafiles: vi.fn(() =>
+        of({ skip: 0, limit: 10, totalCount: 2, results: [datafile('a'), datafile('b')] }),
+      ),
+      filterDatafiles: vi.fn(() =>
+        of({ skip: 0, limit: 10, totalCount: 1, results: [datafile('a')] }),
+      ),
       deleteDatafile: vi.fn(() => of({})),
     };
     TestBed.configureTestingModule({
@@ -45,7 +56,9 @@ describe('ViewDatasetsComponent', () => {
   });
 
   it('uses the filter endpoint when filters are given', () => {
-    const filterSet = [{ key: 'title', operation: FilterOperations.CONTAINS, negate: false, value: 'a' } as const];
+    const filterSet = [
+      { key: 'title', operation: FilterOperations.CONTAINS, negate: false, value: 'a' } as const,
+    ];
     component.loadData({ filterSet: [...filterSet] });
     expect(api['filterDatafiles']).toHaveBeenCalledWith({ filterSet }, 10, 0, true);
     expect(component.dataSource.map((d) => d._id)).toEqual(['a']);
@@ -73,7 +86,9 @@ describe('ViewDatasetsComponent', () => {
   });
 
   it('downloads a single datafile by id', () => {
-    const downloadAsJSON = vi.spyOn(TestBed.inject(DownloadService), 'downloadAsJSON').mockImplementation(() => undefined);
+    const downloadAsJSON = vi
+      .spyOn(TestBed.inject(DownloadService), 'downloadAsJSON')
+      .mockImplementation(() => undefined);
     component.downloadByID('b');
     expect(downloadAsJSON).toHaveBeenCalledWith(datafile('b'), 'b.json');
   });

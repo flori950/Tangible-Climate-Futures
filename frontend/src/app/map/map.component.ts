@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
   ElementRef,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { MatChipListboxChange } from '@angular/material/chips';
 import { TranslateService } from '@ngx-translate/core';
@@ -26,19 +26,11 @@ import { fromLonLat, transform } from 'ol/proj';
 import { Vector as VectorSource } from 'ol/source';
 import XYZ from 'ol/source/XYZ';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
-import {
-  AreaFilter,
-  FilterOperations,
-  RadiusFilter,
-} from '../../../../common/types';
+import { AreaFilter, FilterOperations, RadiusFilter } from '../../../../common/types';
 import { NotificationService } from '../notification.service';
 import { ApiService } from '../shared/service/api.service';
 import { CoordinateService } from '../shared/service/coordinate.service';
-import {
-  isAreaFilter,
-  isMapFilter,
-  isRadiusFilter,
-} from '../../util/filter-utils';
+import { isAreaFilter, isMapFilter, isRadiusFilter } from '../../util/filter-utils';
 
 /** Enum of the shape, which is currently drawn */
 export enum DrawObjectType {
@@ -64,30 +56,29 @@ export interface DisplayCollection {
 /**
  * Based on:
  * - https://openlayers.org/en/latest/examples/draw-and-modify-features.html; accessed: May 29, 2023; 11:37
- * 
- * This Map serves two purposes. For one, it allows the user to look up an address and set a location on the map 
+ *
+ * This Map serves two purposes. For one, it allows the user to look up an address and set a location on the map
  * for the upload of data. Secondly, this map allows for managing the area-filters in the journey page.
- * 
+ *
  * Caution: The map uses internally the EPSG:3857 projection.
  */
 
 @Component({
-    selector: 'app-map',
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class MapComponent implements OnInit, OnChanges {
-  
-  /** 
+  /**
    * Emits the coordinates of the location clicked in the map.
    * Requires enableDrawFeatures to be turned off.
    */
   @Output()
   coordinateSelected = new EventEmitter<[number, number]>();
 
-  /** 
+  /**
    * Emits as soon as the the currently applied filter changed and contains all filters.
    * Requires enableDrawFeatures to be turned on.
    */
@@ -162,7 +153,7 @@ export class MapComponent implements OnInit, OnChanges {
     private coordinateService: CoordinateService,
     private apiService: ApiService,
     private translate: TranslateService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {}
 
   /**
@@ -212,8 +203,7 @@ export class MapComponent implements OnInit, OnChanges {
     }
 
     filters.forEach((filter) => {
-      if ( !isMapFilter(filter) || this.searchAreas.find((area) => area.filter == filter) != null
-      ) {
+      if (!isMapFilter(filter) || this.searchAreas.find((area) => area.filter == filter) != null) {
         //filter not applicable
         return;
       }
@@ -223,7 +213,7 @@ export class MapComponent implements OnInit, OnChanges {
         ? new Feature({
             geometry: new Geometry.Circle(
               fromLonLat(filter.value.center),
-              filter.value.radius * 1000 * 2
+              filter.value.radius * 1000 * 2,
             ),
           })
         : new Feature({
@@ -236,9 +226,7 @@ export class MapComponent implements OnInit, OnChanges {
       this.searchAreas.push({
         id: getUid(feature.getGeometry()),
         name: isRadiusFilter(filter)
-          ? `Radius ${this.radiusCounter++} (${this.formatRadius(
-              filter.value.radius * 1000
-            )})`
+          ? `Radius ${this.radiusCounter++} (${this.formatRadius(filter.value.radius * 1000)})`
           : `Polygon ${this.polygonCounter++}`,
         filter,
         feature,
@@ -301,7 +289,7 @@ export class MapComponent implements OnInit, OnChanges {
     (this.collections ?? []).forEach((collection) => {
       const point = new Feature({
         geometry: new Geometry.MultiPoint(
-          collection.coordinates.map((coords) => fromLonLat(coords))
+          collection.coordinates.map((coords) => fromLonLat(coords)),
         ),
       });
 
@@ -318,7 +306,7 @@ export class MapComponent implements OnInit, OnChanges {
               width: 1,
             }),
           }),
-        })
+        }),
       );
       this.pointSource.addFeature(point);
     });
@@ -347,7 +335,7 @@ export class MapComponent implements OnInit, OnChanges {
             color: '#141414',
           }),
         }),
-      })
+      }),
     );
     this.pointSource.addFeature(marker);
     return marker;
@@ -382,7 +370,7 @@ export class MapComponent implements OnInit, OnChanges {
     //a new feature was drawn
     this.source.on('addfeature', (evt) => {
       const feature = evt.feature;
-      if ( this.searchAreas.find((area) => area.id == getUid(feature?.getGeometry())) != null ){
+      if (this.searchAreas.find((area) => area.id == getUid(feature?.getGeometry())) != null) {
         //the feature is not new/ the UIDs match -> this should not happen
         return;
       }
@@ -419,13 +407,10 @@ export class MapComponent implements OnInit, OnChanges {
     this.modify.on('modifyend', (evt) => {
       const feature = evt.features.getArray()[0];
       const id = getUid(feature.getGeometry());
-      const indexInSearchAreas = this.searchAreas.findIndex((area) => area.id === id );
+      const indexInSearchAreas = this.searchAreas.findIndex((area) => area.id === id);
       if (
         indexInSearchAreas > -1 &&
-        this.modifyFilterFromGeometry(
-          this.searchAreas[indexInSearchAreas].filter,
-          feature
-        )
+        this.modifyFilterFromGeometry(this.searchAreas[indexInSearchAreas].filter, feature)
       ) {
         //Feature exists -> override existing with new feature
         this.searchAreas[indexInSearchAreas].feature = feature;
@@ -436,7 +421,8 @@ export class MapComponent implements OnInit, OnChanges {
           const radius = (feature?.getGeometry() as Geometry.Circle).getRadius() / 2;
 
           //update name and length of radius
-          this.searchAreas[indexInSearchAreas].name = `${name.substring(0,index)} (${this.formatRadius(radius)})`;
+          this.searchAreas[indexInSearchAreas].name =
+            `${name.substring(0, index)} (${this.formatRadius(radius)})`;
         }
       }
       this.emitChanges();
@@ -480,7 +466,9 @@ export class MapComponent implements OnInit, OnChanges {
    * @param feature any geometry
    * @returns the appropriate filter or undefined
    */
-  createFilterFromGeometry(feature?: Feature<Geometry.Geometry>): AreaFilter | RadiusFilter | undefined {
+  createFilterFromGeometry(
+    feature?: Feature<Geometry.Geometry>,
+  ): AreaFilter | RadiusFilter | undefined {
     if (!feature) {
       return undefined;
     }
@@ -495,16 +483,12 @@ export class MapComponent implements OnInit, OnChanges {
         value: {
           vertices: polygon
             .getCoordinates()[0]
-            .map(
-              (r) => this.coordinateService.transformToLongLat(r) as number[]
-            ),
+            .map((r) => this.coordinateService.transformToLongLat(r) as number[]),
         },
       };
     } else if (feature?.getGeometry()?.getType() === 'Circle') {
       const circle = feature.getGeometry() as Geometry.Circle;
-      const center = this.coordinateService.transformToLongLat(
-        circle.getCenter()
-      );
+      const center = this.coordinateService.transformToLongLat(circle.getCenter());
       const radius = circle.getRadius() / 2 / 1000;
 
       return {
@@ -529,30 +513,22 @@ export class MapComponent implements OnInit, OnChanges {
    */
   modifyFilterFromGeometry(
     filter: RadiusFilter | AreaFilter,
-    feature?: Feature<Geometry.Geometry>
+    feature?: Feature<Geometry.Geometry>,
   ): AreaFilter | RadiusFilter | false {
     if (!feature) {
       return false;
     }
 
-    if (
-      feature?.getGeometry()?.getType() === 'Polygon' &&
-      isAreaFilter(filter)
-    ) {
+    if (feature?.getGeometry()?.getType() === 'Polygon' && isAreaFilter(filter)) {
       const polygon = feature.getGeometry() as Geometry.Polygon;
 
       filter.value.vertices = polygon
         .getCoordinates()[0]
         .map((r) => this.coordinateService.transformToLongLat(r) as number[]);
       return filter;
-    } else if (
-      feature?.getGeometry()?.getType() === 'Circle' &&
-      isRadiusFilter(filter)
-    ) {
+    } else if (feature?.getGeometry()?.getType() === 'Circle' && isRadiusFilter(filter)) {
       const circle = feature.getGeometry() as Geometry.Circle;
-      const center = this.coordinateService.transformToLongLat(
-        circle.getCenter()
-      );
+      const center = this.coordinateService.transformToLongLat(circle.getCenter());
       const radius = circle.getRadius() / 2 / 1000;
 
       filter.value.center = center;
@@ -617,15 +593,12 @@ export class MapComponent implements OnInit, OnChanges {
     if (popupElement && popupContent) {
       /** https://openlayers.org/en/latest/apidoc/module-ol_coordinate.html; accessed: May 29, 2023 at 14:39 */
       // Transform the coordinate to long/lat format
-      const transformedCoords =
-        this.coordinateService.transformToLongLat(coordinate);
+      const transformedCoords = this.coordinateService.transformToLongLat(coordinate);
 
       // Format the coordinate string
       const stringifyFunc = createStringXY(4);
       const out = stringifyFunc(transformedCoords);
-      popupContent.innerHTML = `${this.translate.instant(
-        'map.coordinate'
-      )}: ${out}`;
+      popupContent.innerHTML = `${this.translate.instant('map.coordinate')}: ${out}`;
 
       this.overlay = new Overlay({
         element: popupElement,
@@ -655,11 +628,7 @@ export class MapComponent implements OnInit, OnChanges {
       this.apiService.geocodeAddress(this.address).subscribe((coordinates) => {
         if (coordinates) {
           const [longitude, latitude] = coordinates;
-          const coordinate = transform(
-            [longitude, latitude],
-            'EPSG:4326',
-            'EPSG:3857'
-          );
+          const coordinate = transform([longitude, latitude], 'EPSG:4326', 'EPSG:3857');
           this.map.getView().setCenter(coordinate); //re-centers the map
           this.drawLongLatCoords(longitude, latitude);
         } else {
@@ -711,7 +680,7 @@ export class MapComponent implements OnInit, OnChanges {
 
   /**
    * Highlights the feature of the clicked chip
-   * @param change 
+   * @param change
    */
   chipSelectionChanged(change: MatChipListboxChange) {
     this.searchAreas.forEach((area) => {
@@ -725,7 +694,7 @@ export class MapComponent implements OnInit, OnChanges {
             fill: new Fill({
               color: 'rgba(255, 255, 255, 0.5)',
             }),
-          })
+          }),
         );
       } else {
         //use the predefined style

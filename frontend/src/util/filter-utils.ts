@@ -11,9 +11,7 @@ export function isFilter(filter: AnyFilter): filter is Filter {
   return Object.prototype.hasOwnProperty.call(filter, 'key');
 }
 
-export function isConcatenationFilter(
-  filter: AnyFilter
-): filter is ConcatenationFilter {
+export function isConcatenationFilter(filter: AnyFilter): filter is ConcatenationFilter {
   return Object.prototype.hasOwnProperty.call(filter, 'booleanOperation');
 }
 
@@ -25,13 +23,10 @@ export function isRadiusFilter(filter: AnyFilter): filter is RadiusFilter {
   return isFilter(filter) && filter.operation == FilterOperations.RADIUS;
 }
 
-export function isMapFilter(
-  filter: AnyFilter
-): filter is AreaFilter | RadiusFilter {
+export function isMapFilter(filter: AnyFilter): filter is AreaFilter | RadiusFilter {
   return (
     isFilter(filter) &&
-    (filter.operation == FilterOperations.AREA ||
-      filter.operation == FilterOperations.RADIUS)
+    (filter.operation == FilterOperations.AREA || filter.operation == FilterOperations.RADIUS)
   );
 }
 
@@ -42,8 +37,7 @@ export function isBooleanFilter(filter: AnyFilter) {
 export function isStringFilter(filter: AnyFilter) {
   return (
     isFilter(filter) &&
-    (filter.operation == FilterOperations.MATCHES ||
-      filter.operation == FilterOperations.CONTAINS)
+    (filter.operation == FilterOperations.MATCHES || filter.operation == FilterOperations.CONTAINS)
   );
 }
 

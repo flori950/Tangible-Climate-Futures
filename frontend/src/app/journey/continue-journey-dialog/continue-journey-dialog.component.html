@@ -1,21 +1,25 @@
 <div class="form-field-container">
   <mat-form-field [floatLabel]="'always'">
-    <mat-label>{{'continueJourneyDialog.title' | translate }}</mat-label>
-    <input matInput [placeholder]="'continueJourneyDialog.titlePlaceholder' | translate" [formControl]="titleControl" />
+    <mat-label>{{ 'continueJourneyDialog.title' | translate }}</mat-label>
+    <input
+      matInput
+      [placeholder]="'continueJourneyDialog.titlePlaceholder' | translate"
+      [formControl]="titleControl"
+    />
     @if (titleControl.invalid) {
-      <mat-error>{{
-        getControlErrorMessage(titleControl) | translate
-      }}</mat-error>
+      <mat-error>{{ getControlErrorMessage(titleControl) | translate }}</mat-error>
     }
   </mat-form-field>
   <mat-form-field [floatLabel]="'always'">
-    <mat-label>{{'continueJourneyDialog.description' | translate }}</mat-label>
-    <textarea matInput rows="4" [placeholder]="'continueJourneyDialog.descriptionPlaceholder' | translate"
-    [formControl]="descriptionControl"></textarea>
+    <mat-label>{{ 'continueJourneyDialog.description' | translate }}</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      [placeholder]="'continueJourneyDialog.descriptionPlaceholder' | translate"
+      [formControl]="descriptionControl"
+    ></textarea>
     @if (descriptionControl.invalid) {
-      <mat-error>{{
-        getControlErrorMessage(descriptionControl) | translate
-      }}</mat-error>
+      <mat-error>{{ getControlErrorMessage(descriptionControl) | translate }}</mat-error>
     }
   </mat-form-field>
   <mat-form-field class="tags-form-field" floatLabel="always">
@@ -29,17 +33,24 @@
           </button>
         </mat-chip-row>
       }
-      <input [placeholder]="'filter-blocks.new-tag' | translate" [matChipInputFor]="chipGrid"
-        (matChipInputTokenEnd)="addTag($event)" />
+      <input
+        [placeholder]="'filter-blocks.new-tag' | translate"
+        [matChipInputFor]="chipGrid"
+        (matChipInputTokenEnd)="addTag($event)"
+      />
     </mat-chip-grid>
   </mat-form-field>
 </div>
 <div class="action-buttons">
   <button mat-stroked-button (click)="cancel()">
-    {{ "edit-map-filter-dialog.cancel" | translate }}
+    {{ 'edit-map-filter-dialog.cancel' | translate }}
   </button>
-  <button mat-raised-button color="primary" [disabled]="titleControl.invalid || descriptionControl.invalid"
-    (click)="confirm()">
-    {{ "edit-map-filter-dialog.confirm" | translate }}
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="titleControl.invalid || descriptionControl.invalid"
+    (click)="confirm()"
+  >
+    {{ 'edit-map-filter-dialog.confirm' | translate }}
   </button>
 </div>

@@ -25,7 +25,11 @@ describe('NoFileUploadComponent', () => {
           tags: ['t'],
           dataSet: 'NONE',
           dataType: DataType.REFERENCED,
-          content: { url: 'https://x/y.jpg', mediaType: MediaType.PHOTO, location: { type: 'Point', coordinates: [13, 52] } },
+          content: {
+            url: 'https://x/y.jpg',
+            mediaType: MediaType.PHOTO,
+            location: { type: 'Point', coordinates: [13, 52] },
+          },
         }),
       ),
     };
@@ -36,7 +40,10 @@ describe('NoFileUploadComponent', () => {
         mockAuthServiceProvider(),
         { provide: ApiService, useValue: api },
         { provide: NotificationService, useValue: { showInfo: vi.fn() } },
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ 'data-set-id': 'd1' }) } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({ 'data-set-id': 'd1' }) } },
+        },
       ],
     });
     vi.spyOn(TestBed.inject(Router), 'url', 'get').mockReturnValue(url);
@@ -85,9 +92,20 @@ describe('NoFileUploadComponent', () => {
 
   it('builds referenced datafiles with url, media type and location', () => {
     create('/upload-data/no-file');
-    Object.assign(component, { title: 't', selectedKeywords: ['k'], url: 'u', mediaType: MediaType.PHOTO, longitude: 1, latitude: 2 });
+    Object.assign(component, {
+      title: 't',
+      selectedKeywords: ['k'],
+      url: 'u',
+      mediaType: MediaType.PHOTO,
+      longitude: 1,
+      latitude: 2,
+    });
     const content = component.toDataFile().content as Ref;
-    expect(content).toEqual({ url: 'u', mediaType: MediaType.PHOTO, location: { type: 'Point', coordinates: [1, 2] } });
+    expect(content).toEqual({
+      url: 'u',
+      mediaType: MediaType.PHOTO,
+      location: { type: 'Point', coordinates: [1, 2] },
+    });
   });
 
   it('manages keywords from the chip input', () => {
@@ -103,6 +121,9 @@ describe('NoFileUploadComponent', () => {
   it('creates new and updates existing datafiles', () => {
     create('/data-sets/d1');
     component.updateData();
-    expect(api['updateDatafile']).toHaveBeenCalledWith('d1', expect.objectContaining({ title: 'Existing' }));
+    expect(api['updateDatafile']).toHaveBeenCalledWith(
+      'd1',
+      expect.objectContaining({ title: 'Existing' }),
+    );
   });
 });

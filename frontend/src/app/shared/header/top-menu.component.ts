@@ -11,11 +11,11 @@ import { CoordinateService } from '../service/coordinate.service';
  * These are: Button to return to start page, page title, user info and log out, language change.
  */
 @Component({
-    selector: 'app-top-menu',
-    templateUrl: './top-menu.component.html',
-    styleUrls: ['./top-menu.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-top-menu',
+  templateUrl: './top-menu.component.html',
+  styleUrls: ['./top-menu.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TopMenuComponent implements OnInit {
   @Output() languageChanged = new EventEmitter<string>();
@@ -33,7 +33,7 @@ export class TopMenuComponent implements OnInit {
     private coordinateService: CoordinateService,
     private translate: TranslateService,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
   ) {
     this.translate.setFallbackLang('de');
     this.user$ = auth.user$;
@@ -46,7 +46,7 @@ export class TopMenuComponent implements OnInit {
     this.coordinateService.coordinate$.subscribe((coordinate) => {
       this.coordinate = coordinate;
     });
-    
+
     // check router status
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {

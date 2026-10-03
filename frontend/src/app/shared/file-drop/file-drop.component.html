@@ -11,7 +11,13 @@
       <mat-icon>add</mat-icon>
       {{ chooseLabel }}
     </button>
-    <input #fileInput class="native-input" type="file" [accept]="accept" (change)="onInputChange($event)" />
+    <input
+      #fileInput
+      class="native-input"
+      type="file"
+      [accept]="accept"
+      (change)="onInputChange($event)"
+    />
   </div>
 
   <div class="drop-area">
@@ -19,7 +25,12 @@
       <div class="selected-file">
         <mat-icon>description</mat-icon>
         <span class="file-name">{{ file.name }}</span>
-        <button mat-icon-button type="button" [attr.aria-label]="'upload.removeFile' | translate" (click)="clear()">
+        <button
+          mat-icon-button
+          type="button"
+          [attr.aria-label]="'upload.removeFile' | translate"
+          (click)="clear()"
+        >
           <mat-icon>close</mat-icon>
         </button>
       </div>

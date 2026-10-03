@@ -62,7 +62,9 @@ describe('FileDropComponent', () => {
 
   it('emits the file chosen via the native file dialog', () => {
     const file = new File(['a'], 'a.json');
-    const input = (fixture.nativeElement as HTMLElement).querySelector('input[type=file]') as HTMLInputElement;
+    const input = (fixture.nativeElement as HTMLElement).querySelector(
+      'input[type=file]',
+    ) as HTMLInputElement;
     Object.defineProperty(input, 'files', { value: [file], configurable: true });
 
     input.dispatchEvent(new Event('change'));

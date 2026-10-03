@@ -30,7 +30,7 @@ interface DropdownOption {
 /**
  * The Component includes the upload referenced data and textual data.
  * Also, this component is used to modify an uploaded data file.
- * 
+ *
  * Sources:
  * We use the components and examples from https://material.angular.io/components/categories.
  * In particular, we use and adopted the code from:
@@ -38,10 +38,10 @@ interface DropdownOption {
  * https://material.angular.io/components/select/overview for the dropdown
  */
 @Component({
-    templateUrl: './no-file.component.html',
-    styleUrls: ['./no-file.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  templateUrl: './no-file.component.html',
+  styleUrls: ['./no-file.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class NoFileUploadComponent {
   isCreatingDataFile = true;
@@ -89,15 +89,13 @@ export class NoFileUploadComponent {
     private location: Location,
     private activatedRoute: ActivatedRoute,
     private notificationService: NotificationService,
-    private translate: TranslateService
+    private translate: TranslateService,
   ) {
     this.filteredKeywords = this.keywordFormControl.valueChanges.pipe(
       startWith(null),
       map((keyword: string | null) =>
-        keyword
-          ? this.filter(keyword)
-          : this.availablePredefinedKeywords.slice()
-      )
+        keyword ? this.filter(keyword) : this.availablePredefinedKeywords.slice(),
+      ),
     );
 
     if (this.router.url.startsWith('/data-sets/')) {
@@ -118,10 +116,7 @@ export class NoFileUploadComponent {
 
         if (this.uploadMapComponent && this.longitude && this.latitude) {
           //if able, draw coordinate on map
-          this.uploadMapComponent.drawLongLatCoords(
-            this.longitude!,
-            this.latitude!
-          );
+          this.uploadMapComponent.drawLongLatCoords(this.longitude!, this.latitude!);
         }
       });
     } else {
@@ -190,7 +185,7 @@ export class NoFileUploadComponent {
     const filterValue = value.toLowerCase();
 
     return this.availablePredefinedKeywords.filter((keyword) =>
-      keyword.toLowerCase().includes(filterValue)
+      keyword.toLowerCase().includes(filterValue),
     );
   }
 
@@ -207,14 +202,12 @@ export class NoFileUploadComponent {
       .pipe(
         catchError((err: HttpErrorResponse) => {
           throw err.message;
-        })
+        }),
       )
       .subscribe(() => {
         this.isLoading = false;
         this.resetForm();
-        const creationSuccessfull = this.translate.instant(
-          'createUpdateDatafile.creationSuccess'
-        );
+        const creationSuccessfull = this.translate.instant('createUpdateDatafile.creationSuccess');
         this.notificationService.showInfo(creationSuccessfull);
       });
   }
@@ -231,13 +224,11 @@ export class NoFileUploadComponent {
       .pipe(
         catchError((err: HttpErrorResponse) => {
           throw err.message;
-        })
+        }),
       )
       .subscribe(() => {
         this.isLoading = false;
-        const updateSuccessfull = this.translate.instant(
-          'createUpdateDatafile.updateSuccess'
-        );
+        const updateSuccessfull = this.translate.instant('createUpdateDatafile.updateSuccess');
         this.notificationService.showInfo(updateSuccessfull);
       });
   }
@@ -289,10 +280,7 @@ export class NoFileUploadComponent {
     return {
       title: this.title!,
       description: this.description,
-      dataType:
-        this.isReferencedData === true
-          ? DataType.REFERENCED
-          : DataType.NOTREFERENCED,
+      dataType: this.isReferencedData === true ? DataType.REFERENCED : DataType.NOTREFERENCED,
       tags: this.selectedKeywords,
       dataSet: SupportedDatasetFileTypes.NONE,
       content: content,

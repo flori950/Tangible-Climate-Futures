@@ -4,7 +4,7 @@
   </div>
 
   <mat-slider [max]="1200" [min]="50" [step]="10">
-    <input matSliderThumb [(ngModel)]="width">
+    <input matSliderThumb [(ngModel)]="width" />
   </mat-slider>
 </div>
 
@@ -16,10 +16,7 @@
       </mat-expansion-panel-header>
       <div class="per-collection">
         @for (datafile of collection.results; track datafile) {
-          <app-data-display
-            [data]="datafile"
-            [width]="width"
-          ></app-data-display>
+          <app-data-display [data]="datafile" [width]="width"></app-data-display>
         }
       </div>
     </mat-expansion-panel>

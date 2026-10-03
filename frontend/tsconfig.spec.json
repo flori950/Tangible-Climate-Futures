@@ -3,16 +3,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": [
-      "vitest/globals"
-    ]
+    "types": ["vitest/globals"]
   },
-  "include": [
-    "src/**/*.spec.ts",
-    "src/test-setup.ts",
-    "src/testing/**/*.ts",
-    "src/**/*.d.ts"
-  ],
+  "include": ["src/**/*.spec.ts", "src/test-setup.ts", "src/testing/**/*.ts", "src/**/*.d.ts"],
   "angularCompilerOptions": {
     "extendedDiagnostics": {
       "checks": {

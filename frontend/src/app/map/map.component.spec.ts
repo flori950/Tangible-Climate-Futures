@@ -21,7 +21,14 @@ describe('MapComponent', () => {
     key: 'content.location',
     operation: FilterOperations.AREA,
     negate: false,
-    value: { vertices: [[13.3, 52.5], [13.4, 52.5], [13.4, 52.6], [13.3, 52.5]] },
+    value: {
+      vertices: [
+        [13.3, 52.5],
+        [13.4, 52.5],
+        [13.4, 52.6],
+        [13.3, 52.5],
+      ],
+    },
   };
 
   beforeEach(() => {
@@ -65,7 +72,9 @@ describe('MapComponent', () => {
   it('creates an AREA filter from a drawn polygon in lon/lat', () => {
     fixture.detectChanges();
     const ring = areaFilter.value.vertices.map((c) => fromLonLat(c));
-    const filter = component.createFilterFromGeometry(new Feature(new Polygon([ring]))) as AreaFilter;
+    const filter = component.createFilterFromGeometry(
+      new Feature(new Polygon([ring])),
+    ) as AreaFilter;
 
     expect(filter.operation).toBe(FilterOperations.AREA);
     filter.value.vertices.forEach((vertex, i) => {
@@ -94,7 +103,13 @@ describe('MapComponent', () => {
 
   it('draws one multi-point feature per displayed collection', () => {
     fixture.componentRef.setInput('collections', [
-      { hexColor: '#ff0000', coordinates: [[13.4, 52.5], [13.41, 52.51]] },
+      {
+        hexColor: '#ff0000',
+        coordinates: [
+          [13.4, 52.5],
+          [13.41, 52.51],
+        ],
+      },
       { hexColor: '#00ff00', coordinates: [[13.3, 52.4]] },
     ]);
     fixture.detectChanges();

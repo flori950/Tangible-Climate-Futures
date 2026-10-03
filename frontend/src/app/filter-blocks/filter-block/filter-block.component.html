@@ -1,39 +1,45 @@
 @if (filter) {
   <div class="block-row">
     <mat-form-field floatLabel="always" (change)="onChange.emit()">
-      <mat-label>{{ "filter-block.key" | translate }}</mat-label>
+      <mat-label>{{ 'filter-block.key' | translate }}</mat-label>
       @if (dropdownOptions === undefined || dropdownOptions.length === 0) {
-        <input matInput
-          [placeholder]="('filter-block.key' | translate) + '...'" [formControl]="keyControl"
-          (change)="onChange.emit()" />
+        <input
+          matInput
+          [placeholder]="('filter-block.key' | translate) + '...'"
+          [formControl]="keyControl"
+          (change)="onChange.emit()"
+        />
       }
       @if (dropdownOptions !== undefined && dropdownOptions.length > 0) {
         <mat-select (valueChange)="filter.key = $event">
           @for (key of dropdownOptions; track key) {
             <mat-option [value]="key.value">
-              {{key.viewValue}}
+              {{ key.viewValue }}
             </mat-option>
           }
         </mat-select>
       }
       @if (keyControl.invalid) {
-        <mat-error>{{
-          getControlErrorMessage(keyControl)
-        }}</mat-error>
+        <mat-error>{{ getControlErrorMessage(keyControl) }}</mat-error>
       }
     </mat-form-field>
     <div class="spacer"></div>
-  <mat-slide-toggle class="negate" [checked]="filter.negate" [matTooltip]="
-      (filter.negate ? 'filter-block.negated' : 'filter-block.not-negated')
-        | translate
-    " (change)="toggleNegate()" [color]="'warn'">
+    <mat-slide-toggle
+      class="negate"
+      [checked]="filter.negate"
+      [matTooltip]="
+        (filter.negate ? 'filter-block.negated' : 'filter-block.not-negated') | translate
+      "
+      (change)="toggleNegate()"
+      [color]="'warn'"
+    >
     </mat-slide-toggle>
     <mat-form-field class="operation">
-      <mat-label>{{ "filter-block.operation" | translate }}</mat-label>
+      <mat-label>{{ 'filter-block.operation' | translate }}</mat-label>
       <mat-select [value]="filter.operation" (valueChange)="onOperationSelectionChange($event)">
         @for (op of filterOperations; track op) {
           <mat-option [value]="op">
-            {{ "filter-block.operation-" + op | lowercase | translate }}
+            {{ 'filter-block.operation-' + op | lowercase | translate }}
           </mat-option>
         }
       </mat-select>
@@ -41,7 +47,7 @@
     <div class="spacer"></div>
     @if (isFormFieldFilter()) {
       <mat-form-field floatLabel="always">
-        <mat-label>{{ "filter-block.value" | translate }}</mat-label>
+        <mat-label>{{ 'filter-block.value' | translate }}</mat-label>
         @if (isBooleanFilter()) {
           <mat-select [(ngModel)]="filter.value" (selectionChange)="onChange.emit()">
             <mat-option [value]="true">True</mat-option>
@@ -49,14 +55,16 @@
           </mat-select>
         }
         @if (isInputFilter()) {
-          <input matInput [placeholder]="('filter-block.value' | translate) + '...'"
-            [formControl]="valueControl" [type]="isStringFilter(filter) ? 'text' : 'number'"
-            (change)="onChange.emit()" />
+          <input
+            matInput
+            [placeholder]="('filter-block.value' | translate) + '...'"
+            [formControl]="valueControl"
+            [type]="isStringFilter(filter) ? 'text' : 'number'"
+            (change)="onChange.emit()"
+          />
         }
         @if (isStringFilter() && valueControl.invalid) {
-          <mat-error>{{
-            getControlErrorMessage(valueControl)
-          }}</mat-error>
+          <mat-error>{{ getControlErrorMessage(valueControl) }}</mat-error>
         }
       </mat-form-field>
     }
@@ -64,7 +72,7 @@
       <div>
         <button mat-stroked-button (click)="editMapFilter()">
           <mat-icon fontIcon="edit"></mat-icon>
-          {{ "filter-block.change-map-filter" | translate }}
+          {{ 'filter-block.change-map-filter' | translate }}
         </button>
       </div>
     }

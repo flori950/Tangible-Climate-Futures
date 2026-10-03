@@ -49,7 +49,12 @@ describe('JourneyComponent', () => {
     const data: CollectionData = {
       collection: { title: 'A', filterSet: [] },
       color: '#123456',
-      files: { skip: 0, limit: 10, totalCount: 2, results: [file('f1', [13.4, 52.5]), file('f2', [13.3, 52.4])] },
+      files: {
+        skip: 0,
+        limit: 10,
+        totalCount: 2,
+        results: [file('f1', [13.4, 52.5]), file('f2', [13.3, 52.4])],
+      },
       selectedFilesIds: new Set(['f2']),
     };
 

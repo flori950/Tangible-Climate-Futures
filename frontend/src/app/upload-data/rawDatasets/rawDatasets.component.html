@@ -1,5 +1,4 @@
 <div class="half-page input-container">
-
   <div class="header-row">
     <button mat-icon-button routerLink="/upload-data" color="primary">
       <mat-icon>arrow_back</mat-icon>
@@ -37,20 +36,26 @@
     <mat-chip-grid #chipGrid [required]="true">
       @for (selectedKeyword of selectedKeywords; track selectedKeyword) {
         <mat-chip-row (removed)="remove(selectedKeyword)">
-          {{selectedKeyword}}
+          {{ selectedKeyword }}
           <button matChipRemove [attr.aria-label]="'remove ' + selectedKeyword">
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>
       }
     </mat-chip-grid>
-    <input placeholder="{{ 'createUpdateDatafile.newTagPlaceholder' | translate }}" #keywordInput
-      [formControl]="keywordFormControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)" />
+    <input
+      placeholder="{{ 'createUpdateDatafile.newTagPlaceholder' | translate }}"
+      #keywordInput
+      [formControl]="keywordFormControl"
+      [matChipInputFor]="chipGrid"
+      [matAutocomplete]="auto"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)"
+    />
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
       @for (keyword of filteredKeywords | async; track keyword) {
         <mat-option [value]="keyword">
-          {{keyword}}
+          {{ keyword }}
         </mat-option>
       }
     </mat-autocomplete>
@@ -64,16 +69,21 @@
   <div class="long-lat-container">
     <mat-form-field class="long-lat-input">
       <mat-label>{{ 'datafile.longitude' | translate }}</mat-label>
-      <input matInput type="number" [(ngModel)]="longitude">
+      <input matInput type="number" [(ngModel)]="longitude" />
     </mat-form-field>
 
     <mat-form-field class="long-lat-input">
       <mat-label>{{ 'datafile.latitude' | translate }}</mat-label>
-      <input matInput type="number" [(ngModel)]="latitude">
+      <input matInput type="number" [(ngModel)]="latitude" />
     </mat-form-field>
   </div>
 
-  <button mat-raised-button color="primary" (click)="uploadData()" [disabled]="!formIsValid() || this.isLoading">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="uploadData()"
+    [disabled]="!formIsValid() || this.isLoading"
+  >
     <div class="button-row">
       <span>{{ 'createUpdateDatafile.headerUpload' | translate }}</span>
       @if (isLoading) {
@@ -84,6 +94,9 @@
 </div>
 
 <div class="half-page">
-  <app-map #uploadMapComponent (coordinateSelected)="handleCoordinateChange($event)"
-  [enableDrawFeatures]="false"></app-map>
+  <app-map
+    #uploadMapComponent
+    (coordinateSelected)="handleCoordinateChange($event)"
+    [enableDrawFeatures]="false"
+  ></app-map>
 </div>

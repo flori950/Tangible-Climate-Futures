@@ -11,11 +11,11 @@ export interface InputDialogData {
 }
 
 @Component({
-    selector: 'app-input-dialog',
-    templateUrl: './continue-journey-dialog.component.html',
-    styleUrls: ['./continue-journey-dialog.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-input-dialog',
+  templateUrl: './continue-journey-dialog.component.html',
+  styleUrls: ['./continue-journey-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ContinueJourneyDialogComponent {
   titleControl: FormControl;
@@ -25,7 +25,7 @@ export class ContinueJourneyDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<ContinueJourneyDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: Journey
+    public data: Journey,
   ) {
     this.titleControl = new FormControl(data.title || '', [
       Validators.required,
@@ -49,10 +49,8 @@ export class ContinueJourneyDialogComponent {
   }
 
   getControlErrorMessage(control: FormControl) {
-    if (control.hasError('required'))
-      return 'continueJourneyDialog.requiredError';
-    if (control.hasError('minlength'))
-      return 'continueJourneyDialog.minLengthError';
+    if (control.hasError('required')) return 'continueJourneyDialog.requiredError';
+    if (control.hasError('minlength')) return 'continueJourneyDialog.minLengthError';
     return '';
   }
 

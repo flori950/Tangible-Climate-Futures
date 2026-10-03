@@ -17,10 +17,7 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly auth = inject(Auth);
   readonly idToken$ = idToken(this.auth);
 
-  intercept(
-    request: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     if (!request.url.startsWith(BACKEND_API_URL)) {
       return next.handle(request);
     }
@@ -38,7 +35,7 @@ export class AuthInterceptor implements HttpInterceptor {
           // If there's no idToken, proceed with the original request
           return next.handle(request);
         }
-      })
+      }),
     );
   }
 }

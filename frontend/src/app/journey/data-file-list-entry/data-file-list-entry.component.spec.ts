@@ -46,7 +46,9 @@ describe('DataFileListEntryComponent', () => {
   });
 
   it('opens the file in the data display dialog', () => {
-    const open = vi.spyOn(TestBed.inject(DialogService), 'openDisplayDataDialog').mockImplementation(() => undefined);
+    const open = vi
+      .spyOn(TestBed.inject(DialogService), 'openDisplayDataDialog')
+      .mockImplementation(() => undefined);
     component.viewFile();
     expect(open).toHaveBeenCalledWith(file);
   });

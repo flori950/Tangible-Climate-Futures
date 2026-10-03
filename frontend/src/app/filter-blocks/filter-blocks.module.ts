@@ -10,7 +10,14 @@ import { MapModule } from '../map/map.module';
 
 @NgModule({
   declarations: [FilterBlockComponent, FilterBlocksComponent, EditMapFilterDialogComponent],
-  imports: [MaterialModule, MapModule, CommonModule, ReactiveFormsModule, FormsModule, TranslatePipe],
+  imports: [
+    MaterialModule,
+    MapModule,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    TranslatePipe,
+  ],
   exports: [FilterBlocksComponent],
 })
 export class FilterBlocksModule {}

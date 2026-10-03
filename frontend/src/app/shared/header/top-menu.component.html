@@ -5,42 +5,42 @@
       <!-- <a class="navbar-brand me-2 mb-1 d-flex align-items-center" href="#">
       <img src="assets/images/logo.svg" height="20" alt="" loading="lazy" style="margin-top: 2px;" />
     </a> -->
-    @if (showHomeButton) {
-      <button class="btn btn-link" type="button" (click)="goToStartPage()">
-        <mat-icon>home</mat-icon>
-      </button>
-    }
-  </div>
-
-  <!-- Middle elements -->
-  <div class="navbar-text text-center">
-    <h1>{{ 'title.title' | translate }}</h1>
-  </div>
-
-  <!-- Right elements -->
-  <div class="d-flex ml-auto align-items-center">
-    <div class="me-3">
-      @if (user$ | async; as user) {
-        <span class="navbar-text">{{ 'login.username' | translate }} {{ user.email }}</span>
-      }
-
-      <!-- Logout button -->
-      <button class="btn btn-link" type="button" (click)="logout()">
-        <mat-icon>exit_to_app</mat-icon>
-      </button>
-    </div>
-
-    <!-- Language switcher -->
-    <button mat-icon-button [matMenuTriggerFor]="languageMenu">
-      {{ currentLanguage }}
-    </button>
-    <mat-menu #languageMenu="matMenu">
-      @for (language of supportedLanguages; track language) {
-        <button mat-menu-item (click)="switchLanguage(language)">
-          {{ language }}
+      @if (showHomeButton) {
+        <button class="btn btn-link" type="button" (click)="goToStartPage()">
+          <mat-icon>home</mat-icon>
         </button>
       }
-    </mat-menu>
+    </div>
+
+    <!-- Middle elements -->
+    <div class="navbar-text text-center">
+      <h1>{{ 'title.title' | translate }}</h1>
+    </div>
+
+    <!-- Right elements -->
+    <div class="d-flex ml-auto align-items-center">
+      <div class="me-3">
+        @if (user$ | async; as user) {
+          <span class="navbar-text">{{ 'login.username' | translate }} {{ user.email }}</span>
+        }
+
+        <!-- Logout button -->
+        <button class="btn btn-link" type="button" (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+        </button>
+      </div>
+
+      <!-- Language switcher -->
+      <button mat-icon-button [matMenuTriggerFor]="languageMenu">
+        {{ currentLanguage }}
+      </button>
+      <mat-menu #languageMenu="matMenu">
+        @for (language of supportedLanguages; track language) {
+          <button mat-menu-item (click)="switchLanguage(language)">
+            {{ language }}
+          </button>
+        }
+      </mat-menu>
+    </div>
   </div>
-</div>
 </nav>

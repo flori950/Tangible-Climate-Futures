@@ -36,13 +36,20 @@ describe('CollectionComponent', () => {
     fixture = TestBed.createComponent(CollectionComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('collection', collection);
-    fixture.componentRef.setInput('dataFiles', { skip: 0, limit: 10, totalCount: 2, results: files });
+    fixture.componentRef.setInput('dataFiles', {
+      skip: 0,
+      limit: 10,
+      totalCount: 2,
+      results: files,
+    });
     fixture.componentRef.setInput('color', '#7ae4e9');
     fixture.detectChanges();
   });
 
   it('renders one entry per data file', () => {
-    const entries = (fixture.nativeElement as HTMLElement).querySelectorAll('app-data-file-list-entry');
+    const entries = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      'app-data-file-list-entry',
+    );
     expect(entries.length).toBe(2);
   });
 

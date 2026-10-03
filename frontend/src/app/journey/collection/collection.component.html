@@ -1,8 +1,5 @@
 <mat-expansion-panel [expanded]="triggerExpandSubject | async" (afterCollapse)="afterCollapse()">
-  <mat-expansion-panel-header
-    [class.selected]="isSelected$ | async"
-    [style.background]="color"
-    >
+  <mat-expansion-panel-header [class.selected]="isSelected$ | async" [style.background]="color">
     <div class="header">
       <!-- Only stops clicks on the checkbox/buttons from toggling the expansion panel. -->
       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
@@ -12,8 +9,8 @@
           [indeterminate]="isOneSelected$ | async"
           (change)="selectCollectionFiles($event)"
           ><div>
-          {{ collection.title }}
-        </div></mat-checkbox
+            {{ collection.title }}
+          </div></mat-checkbox
         >
         <div class="edit-button">
           <button mat-icon-button (click)="editTitle()">
@@ -30,8 +27,8 @@
         mat-button
         [disabled]="isSelected$ | async"
         (click)="selectCollection(); $event.stopPropagation()"
-        >
-        {{ "collection.show-filters" | translate }}
+      >
+        {{ 'collection.show-filters' | translate }}
         <mat-icon
           [fontIcon]="(isSelected$ | async) === true ? 'visibility' : 'visibility_off'"
         ></mat-icon>
@@ -40,13 +37,11 @@
   </mat-expansion-panel-header>
   <div>
     @for (file of dataFiles.results; track file) {
-      <app-data-file-list-entry
-        [file]="file"
-      ></app-data-file-list-entry>
+      <app-data-file-list-entry [file]="file"></app-data-file-list-entry>
     }
     @if (dataFiles.results.length === 0) {
       <div class="no-data">
-        {{ "collection.no-data" | translate }}
+        {{ 'collection.no-data' | translate }}
       </div>
     }
   </div>

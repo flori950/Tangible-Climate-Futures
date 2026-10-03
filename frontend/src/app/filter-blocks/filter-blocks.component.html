@@ -2,9 +2,7 @@
   <mat-label>Tags</mat-label>
   <mat-chip-grid #chipGrid>
     @for (tagFilter of tagFilters$ | async; track tagFilter) {
-      <mat-chip-row
-        (removed)="removeFilter(tagFilter)"
-        >
+      <mat-chip-row (removed)="removeFilter(tagFilter)">
         {{ tagFilter.value }}
         <button matChipRemove aria-label="'remove ' + keyword">
           <mat-icon>cancel</mat-icon>
@@ -15,10 +13,10 @@
       [placeholder]="'filter-blocks.new-tag' | translate"
       [matChipInputFor]="chipGrid"
       (matChipInputTokenEnd)="addTag($event)"
-      />
+    />
     @if (hasAdvancedFilters$ | async) {
       <mat-error>
-        {{ "filter-blocks.has-advanced-filters" | translate }}
+        {{ 'filter-blocks.has-advanced-filters' | translate }}
       </mat-error>
     }
   </mat-chip-grid>
@@ -27,90 +25,79 @@
 <div class="block-buttons">
   <button mat-stroked-button color="primary" (click)="search()">
     <mat-icon fontIcon="search"></mat-icon>
-    {{ "filter-blocks.apply-filters" | translate }}
+    {{ 'filter-blocks.apply-filters' | translate }}
   </button>
 
   <button mat-stroked-button color="primary" (click)="toggleAdvancedFilters()">
-    <mat-icon
-      [fontIcon]="showAdvancedFilters ? 'visibility_off' : 'visibility'"
-      >
-      </mat-icon
-      >{{
+    <mat-icon [fontIcon]="showAdvancedFilters ? 'visibility_off' : 'visibility'"> </mat-icon
+    >{{
       showAdvancedFilters
-      ? ("filter-blocks.hide-advanced-filters" | translate)
-      : ("filter-blocks.show-advanced-filters" | translate)
-      }}
-    </button>
-  </div>
+        ? ('filter-blocks.hide-advanced-filters' | translate)
+        : ('filter-blocks.show-advanced-filters' | translate)
+    }}
+  </button>
+</div>
 
-  @if (showAdvancedFilters && (filterSet$ | async); as filterSet) {
-    <div
-      class="filter-set"
-      >
-      @for (filter of filterSet$ | async; track filter; let i = $index) {
-        @if (i !== 0) {
-          <div class="and">
-            {{ "filter-blocks.operation-and" | translate }}
-          </div>
-        }
-        <mat-card>
-          <div class="filter">
-            @if (isConcatenationFilter(filter)) {
-              <div
-                class="concatenation-filters"
-                >
-                @for (concFilter of $any(filter).filters; track concFilter; let i = $index) {
-                  @if (i !== 0) {
-                    <div class="or">
-                      {{ "filter-blocks.operation-or" | translate }}
-                    </div>
-                  }
-                  <div class="or-filter">
-                    <app-filter-block
-                      [filter]="$any(concFilter)"
-                      (onChange)="triggerFilterChange()"
-                      [dropdownOptions]="dropdownOptions"
-                    ></app-filter-block>
-                    <button
-                      class="trash-button"
-                      mat-stroked-button
-                      color="primary"
-                      (click)="removeConcatenationFilter(filter, concFilter)"
-                      >
-                      <mat-icon fontIcon="delete"></mat-icon>
-                    </button>
+@if (showAdvancedFilters && (filterSet$ | async); as filterSet) {
+  <div class="filter-set">
+    @for (filter of filterSet$ | async; track filter; let i = $index) {
+      @if (i !== 0) {
+        <div class="and">
+          {{ 'filter-blocks.operation-and' | translate }}
+        </div>
+      }
+      <mat-card>
+        <div class="filter">
+          @if (isConcatenationFilter(filter)) {
+            <div class="concatenation-filters">
+              @for (concFilter of $any(filter).filters; track concFilter; let i = $index) {
+                @if (i !== 0) {
+                  <div class="or">
+                    {{ 'filter-blocks.operation-or' | translate }}
                   </div>
                 }
-              </div>
-            } @else {
-              <app-filter-block
-                [filter]="$any(filter)"
-                (onChange)="triggerFilterChange()"
-                [dropdownOptions]="dropdownOptions"
-              ></app-filter-block>
-              <button
-                class="trash-button"
-                mat-stroked-button
-                color="primary"
-                (click)="removeFilter(filter)"
-                >
-                <mat-icon fontIcon="delete"></mat-icon>
-              </button>
-            }
-          </div>
-          <button
-            mat-stroked-button
-            color="primary"
-            (click)="addConcatenationFilter(filter)"
+                <div class="or-filter">
+                  <app-filter-block
+                    [filter]="$any(concFilter)"
+                    (onChange)="triggerFilterChange()"
+                    [dropdownOptions]="dropdownOptions"
+                  ></app-filter-block>
+                  <button
+                    class="trash-button"
+                    mat-stroked-button
+                    color="primary"
+                    (click)="removeConcatenationFilter(filter, concFilter)"
+                  >
+                    <mat-icon fontIcon="delete"></mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <app-filter-block
+              [filter]="$any(filter)"
+              (onChange)="triggerFilterChange()"
+              [dropdownOptions]="dropdownOptions"
+            ></app-filter-block>
+            <button
+              class="trash-button"
+              mat-stroked-button
+              color="primary"
+              (click)="removeFilter(filter)"
             >
-            <mat-icon fontIcon="add"></mat-icon>
-            {{ "filter-blocks.operation-or" | translate }}
-          </button>
-        </mat-card>
-      }
-      <button mat-stroked-button color="primary" (click)="addFilter()">
-        <mat-icon fontIcon="add"></mat-icon>
-        {{ "filter-blocks.operation-and" | translate }}
-      </button>
-    </div>
-  }
+              <mat-icon fontIcon="delete"></mat-icon>
+            </button>
+          }
+        </div>
+        <button mat-stroked-button color="primary" (click)="addConcatenationFilter(filter)">
+          <mat-icon fontIcon="add"></mat-icon>
+          {{ 'filter-blocks.operation-or' | translate }}
+        </button>
+      </mat-card>
+    }
+    <button mat-stroked-button color="primary" (click)="addFilter()">
+      <mat-icon fontIcon="add"></mat-icon>
+      {{ 'filter-blocks.operation-and' | translate }}
+    </button>
+  </div>
+}

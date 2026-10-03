@@ -7,11 +7,11 @@ import { InputDialogComponent } from '../../shared/input-dialog/input-dialog.com
 import { JourneyService } from '../services/journey.service';
 
 @Component({
-    selector: 'app-collection',
-    templateUrl: './collection.component.html',
-    styleUrls: ['./collection.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-collection',
+  templateUrl: './collection.component.html',
+  styleUrls: ['./collection.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class CollectionComponent implements OnChanges {
   @Input({ required: true }) collection!: Collection;
@@ -26,7 +26,7 @@ export class CollectionComponent implements OnChanges {
 
   constructor(
     private journeyService: JourneyService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -35,7 +35,7 @@ export class CollectionComponent implements OnChanges {
       this.isAllSelected$ = this.journeyService.allDataFilesSelected$(...ids);
       this.isOneSelected$ = this.journeyService.fewDataFileSelected$(...ids);
       this.isSelected$ = this.journeyService.selectedCollection$.pipe(
-        map((collection) => collection == this.collection)
+        map((collection) => collection == this.collection),
       );
       this.isSelected$
         .pipe(filter((isSelected) => isSelected))
@@ -72,8 +72,7 @@ export class CollectionComponent implements OnChanges {
   }
 
   selectCollectionFiles(change: MatCheckboxChange) {
-    if (change.checked)
-      this.journeyService.selectDataFiles(...this.dataFiles.results);
+    if (change.checked) this.journeyService.selectDataFiles(...this.dataFiles.results);
     else this.journeyService.deselectDataFiles(...this.dataFiles.results);
   }
 }

@@ -3,7 +3,11 @@
     <h1>{{ 'title.rawData' | translate }}</h1>
     <div class="tiles-container">
       @for (tile of rawTiles; track tile) {
-        <app-dashboard-tile [title]="tile.title" [iconName]="tile.icon" [url]="tile.url"></app-dashboard-tile>
+        <app-dashboard-tile
+          [title]="tile.title"
+          [iconName]="tile.icon"
+          [url]="tile.url"
+        ></app-dashboard-tile>
       }
     </div>
   </div>
@@ -12,7 +16,11 @@
     <h1>{{ 'title.supportedData' | translate }}</h1>
     <div class="tiles-container">
       @for (tile of supportedTiles; track tile) {
-        <app-dashboard-tile [title]="tile.title" [iconName]="tile.icon" [url]="tile.url"></app-dashboard-tile>
+        <app-dashboard-tile
+          [title]="tile.title"
+          [iconName]="tile.icon"
+          [url]="tile.url"
+        ></app-dashboard-tile>
       }
     </div>
   </div>

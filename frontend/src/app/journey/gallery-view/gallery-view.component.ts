@@ -12,16 +12,14 @@ interface ResultCollection {
  * This Gallery-View displays all the referenced (i.e., multimedia data) within the collections
  */
 @Component({
-    selector: 'app-gallery-view',
-    templateUrl: './gallery-view.component.html',
-    styleUrls: ['./gallery-view.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-gallery-view',
+  templateUrl: './gallery-view.component.html',
+  styleUrls: ['./gallery-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class GalleryViewComponent {
-  @Input({ required: true }) set collectionsData(
-    value: Observable<CollectionData>[]
-  ) {
+  @Input({ required: true }) set collectionsData(value: Observable<CollectionData>[]) {
     //extracts the referenced data and the title of the collections
     this.dataSource$ = combineLatest(value).pipe(
       map((collectionsData) =>
@@ -31,11 +29,11 @@ export class GalleryViewComponent {
             .filter(
               (datafile) =>
                 datafile.dataType === DataType.REFERENCED &&
-                collectionsData.selectedFilesIds.has(datafile._id!)
+                collectionsData.selectedFilesIds.has(datafile._id!),
             )
             .map((referencedData) => referencedData as RefDataFile),
-        }))
-      )
+        })),
+      ),
     );
   }
 

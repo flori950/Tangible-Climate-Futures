@@ -23,7 +23,7 @@ export class AuthService {
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
-    private translate: TranslateService
+    private translate: TranslateService,
   ) {}
 
   async login(email: string, password: string) {
@@ -31,8 +31,7 @@ export class AuthService {
       await signInWithEmailAndPassword(this.auth, email, password);
       return true;
     } catch (error) {
-      if ((error as AuthError).code != null)
-        this.handleAuthError(error as AuthError);
+      if ((error as AuthError).code != null) this.handleAuthError(error as AuthError);
       return false;
     }
   }
@@ -44,15 +43,10 @@ export class AuthService {
     }
 
     try {
-      await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
+      await createUserWithEmailAndPassword(this.auth, email, password);
       return true;
     } catch (error) {
-      if ((error as AuthError).code != null)
-        this.handleAuthError(error as AuthError);
+      if ((error as AuthError).code != null) this.handleAuthError(error as AuthError);
       return false;
     }
   }
@@ -62,8 +56,7 @@ export class AuthService {
       await sendPasswordResetEmail(this.auth, email);
       return true;
     } catch (error) {
-      if ((error as AuthError).code != null)
-        this.handleAuthError(error as AuthError);
+      if ((error as AuthError).code != null) this.handleAuthError(error as AuthError);
       return false;
     }
   }
@@ -74,8 +67,7 @@ export class AuthService {
       this.router.navigate(['/auth/login']);
       return true;
     } catch (error) {
-      if ((error as AuthError).code != null)
-        this.handleAuthError(error as AuthError);
+      if ((error as AuthError).code != null) this.handleAuthError(error as AuthError);
       return false;
     }
   }
@@ -91,9 +83,7 @@ export class AuthService {
       case 'auth/weak-password':
       case 'auth/password-mismatch':
       case 'auth/wrong-password':
-        this.showErrorSnack(
-          this.translate.instant('auth.error.' + error.split('/')[1])
-        );
+        this.showErrorSnack(this.translate.instant('auth.error.' + error.split('/')[1]));
         break;
       default:
         this.showErrorSnack(this.translate.instant('auth.error.unknown'));
@@ -102,13 +92,9 @@ export class AuthService {
   }
 
   showErrorSnack(errorMessage: string) {
-    this.snackBar.open(
-      errorMessage,
-      this.translate.instant('auth.error.dismiss'),
-      {
-        duration: 5000,
-        panelClass: ['theme-snackbar-error'],
-      }
-    );
+    this.snackBar.open(errorMessage, this.translate.instant('auth.error.dismiss'), {
+      duration: 5000,
+      panelClass: ['theme-snackbar-error'],
+    });
   }
 }

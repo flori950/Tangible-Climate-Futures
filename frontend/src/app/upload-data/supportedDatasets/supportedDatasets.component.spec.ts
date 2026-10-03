@@ -60,7 +60,13 @@ describe('SupportedDatasetsUploadComponent', () => {
 
     component.uploadData();
 
-    expect(createDatasetFromFile).toHaveBeenCalledWith(file, SupportedDatasetFileTypes.CERV2, ['a'], 'd', 4);
+    expect(createDatasetFromFile).toHaveBeenCalledWith(
+      file,
+      SupportedDatasetFileTypes.CERV2,
+      ['a'],
+      'd',
+      4,
+    );
     expect(component.file).toBeUndefined();
   });
 });

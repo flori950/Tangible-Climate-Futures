@@ -2,13 +2,7 @@ import { Component, ViewChild, ChangeDetectionStrategy, OnInit } from '@angular/
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AreaFilter, Collection, Journey, RadiusFilter } from '@common/types';
-import {
-  Observable,
-  combineLatest,
-  last,
-  map,
-  switchMap
-} from 'rxjs';
+import { Observable, combineLatest, last, map, switchMap } from 'rxjs';
 import { isMapFilter } from '../../util/filter-utils';
 import { DisplayCollection } from '../map/map.component';
 import { CollectionData, JourneyService } from './services/journey.service';
@@ -17,12 +11,12 @@ import { ThreeJSComponent } from './threejs-view/threejs-view.component';
 export type ViewType = 'default' | 'no-map';
 
 @Component({
-    selector: 'app-journey',
-    templateUrl: './journey.component.html',
-    styleUrls: ['./journey.component.scss'],
-    providers: [JourneyService],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-journey',
+  templateUrl: './journey.component.html',
+  styleUrls: ['./journey.component.scss'],
+  providers: [JourneyService],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class JourneyComponent implements OnInit {
   journey$?: Observable<Journey | null>;
@@ -39,7 +33,7 @@ export class JourneyComponent implements OnInit {
   constructor(
     private journeyService: JourneyService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -47,13 +41,9 @@ export class JourneyComponent implements OnInit {
     this.selectedCollection$ = this.journeyService.selectedCollection$;
     this.collectionsData$ = this.journeyService.collectionsData$;
     this.displayCollections$ = this.journeyService.collectionsData$.pipe(
-      switchMap((collectionsData) =>
-        this.collectionDataToDisplayCollection(collectionsData)
-      )
+      switchMap((collectionsData) => this.collectionDataToDisplayCollection(collectionsData)),
     );
-    this.hasNoCollections$ = this.collectionsData$.pipe(
-      map((data) => data.length == 0)
-    );
+    this.hasNoCollections$ = this.collectionsData$.pipe(map((data) => data.length == 0));
     this.setMapFilters();
 
     this.route.paramMap.subscribe((paramMap) => {
@@ -72,11 +62,9 @@ export class JourneyComponent implements OnInit {
       map((selectedCollection) => {
         return selectedCollection?.filterSet.filter(
           (filter) =>
-            isMapFilter(filter) &&
-            filter.negate == false &&
-            filter.key == 'content.location'
+            isMapFilter(filter) && filter.negate == false && filter.key == 'content.location',
         ) as (AreaFilter | RadiusFilter)[];
-      })
+      }),
     );
   }
 
@@ -119,7 +107,7 @@ export class JourneyComponent implements OnInit {
   }
 
   collectionDataToDisplayCollection(
-    collectionsData$: Observable<CollectionData>[]
+    collectionsData$: Observable<CollectionData>[],
   ): Observable<DisplayCollection[]> {
     return combineLatest(collectionsData$).pipe(
       map((collectionsData) =>
@@ -127,30 +115,25 @@ export class JourneyComponent implements OnInit {
           (collectionData) =>
             ({
               hexColor: collectionData.color,
-              coordinates: [...collectionData.selectedFilesIds].map(
-                (selectedFileId) => {
-                  const selectedFile = collectionData.files.results.find(
-                    (file) => file._id == selectedFileId
-                  );
-                  return selectedFile?.content.location?.coordinates
-                    ? selectedFile?.content.location?.coordinates
-                    : (selectedFile?.content as any).coords
+              coordinates: [...collectionData.selectedFilesIds].map((selectedFileId) => {
+                const selectedFile = collectionData.files.results.find(
+                  (file) => file._id == selectedFileId,
+                );
+                return selectedFile?.content.location?.coordinates
+                  ? selectedFile?.content.location?.coordinates
+                  : (selectedFile?.content as any).coords
                     ? [
                         (selectedFile?.content as any).coords.longitude,
                         (selectedFile?.content as any).coords.latitude,
                       ]
                     : (() => {
-                        console.error(
-                          'could not find coordinates on file: ',
-                          selectedFile
-                        );
+                        console.error('could not find coordinates on file: ', selectedFile);
                         return false;
                       })() && [0, 0];
-                }
-              ),
-            } as DisplayCollection)
-        )
-      )
+              }),
+            }) as DisplayCollection,
+        ),
+      ),
     );
   }
 }

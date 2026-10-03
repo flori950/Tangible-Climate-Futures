@@ -7,11 +7,11 @@ import { Tile } from '../shared/dashboard-tile/tile';
  * different tiles, i.e., links to different components.
  */
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DashboardComponent implements OnInit {
   tiles: Tile[] = [];

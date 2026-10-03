@@ -36,7 +36,9 @@ function journey(): Journey {
     collections: [
       {
         title: 'Collection #1',
-        filterSet: [{ key: 'tags', operation: FilterOperations.CONTAINS, negate: false, value: 'x' }],
+        filterSet: [
+          { key: 'tags', operation: FilterOperations.CONTAINS, negate: false, value: 'x' },
+        ],
       },
     ],
   };
@@ -168,7 +170,9 @@ describe('JourneyService', () => {
   });
 
   it('does not query the backend for collections without filters', async () => {
-    const result = await firstValueFrom(service.getCollectionDataFiles({ title: 'c', filterSet: [] }));
+    const result = await firstValueFrom(
+      service.getCollectionDataFiles({ title: 'c', filterSet: [] }),
+    );
     expect(result.results).toEqual([]);
     expect(api.filterDatafiles).not.toHaveBeenCalled();
   });
@@ -179,6 +183,9 @@ describe('JourneyService', () => {
 
     await service.download();
 
-    expect(downloadJourney).toHaveBeenCalledWith(expect.objectContaining({ _id: 'j1' }), new Set(['f2']));
+    expect(downloadJourney).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: 'j1' }),
+      new Set(['f2']),
+    );
   });
 });

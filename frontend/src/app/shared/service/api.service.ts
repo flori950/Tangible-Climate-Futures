@@ -31,32 +31,27 @@ export class ApiService {
 
   getDatafiles(limit: number, skip: number, onlyMetadata = false) {
     return this.http.get<PaginationResult<Datafile>>(
-      this.backendUrl +
-        `/datafile/limit=${limit}&skip=${skip}&onlyMetadata=${onlyMetadata}`
+      this.backendUrl + `/datafile/limit=${limit}&skip=${skip}&onlyMetadata=${onlyMetadata}`,
     );
   }
 
-  filterDatafiles(
-    filter: FilterSet,
-    limit: number,
-    skip: number,
-    onlyMetadata = false
-  ) {
+  filterDatafiles(filter: FilterSet, limit: number, skip: number, onlyMetadata = false) {
     return this.http.post<PaginationResult<Datafile>>(
-      this.backendUrl +
-        `/datafile/filter/limit=${limit}&skip=${skip}&onlyMetadata=${onlyMetadata}`,
-      filter
+      this.backendUrl + `/datafile/filter/limit=${limit}&skip=${skip}&onlyMetadata=${onlyMetadata}`,
+      filter,
     );
   }
 
   getJourneys(limit: number, skip: number) {
-    return this.http.get<PaginationResult<Journey>>(this.backendUrl + `/journey/limit=${limit}&skip=${skip}`);
+    return this.http.get<PaginationResult<Journey>>(
+      this.backendUrl + `/journey/limit=${limit}&skip=${skip}`,
+    );
   }
 
   filterJourneys(filter: FilterSet, limit: number, skip: number) {
     return this.http.post<PaginationResult<Journey>>(
       this.backendUrl + `/journey/filter/limit=${limit}&skip=${skip}`,
-      filter
+      filter,
     );
   }
 
@@ -73,16 +68,13 @@ export class ApiService {
   }
 
   attachFile(documentId: string, formData: FormData) {
-    return this.http.post<Datafile>(
-      this.backendUrl + `/datafile/${documentId}/attach`,
-      formData
-    );
+    return this.http.post<Datafile>(this.backendUrl + `/datafile/${documentId}/attach`, formData);
   }
 
   createDatafileWithFile(
     data: Datafile,
     file: File,
-    fileType: SupportedRawFileTypes
+    fileType: SupportedRawFileTypes,
   ): Observable<any> {
     return this.createDatafile(data).pipe(
       concatMap((result) => {
@@ -90,7 +82,7 @@ export class ApiService {
         formData.append('file', file);
         formData.append('fileType', fileType);
         return this.attachFile(result._id!, formData);
-      })
+      }),
     );
   }
 
@@ -99,7 +91,7 @@ export class ApiService {
     datasetType: SupportedDatasetFileTypes,
     tags?: string[],
     description?: string,
-    steps?: number
+    steps?: number,
   ) {
     const formData = new FormData();
     formData.append('file', file);
@@ -117,10 +109,7 @@ export class ApiService {
       formData.append('steps', steps.toString());
     }
 
-    return this.http.post<Datafile>(
-      this.backendUrl + '/datafile/fromFile',
-      formData
-    );
+    return this.http.post<Datafile>(this.backendUrl + '/datafile/fromFile', formData);
   }
 
   updateDatafile(id: string, data: Datafile) {
@@ -138,7 +127,7 @@ export class ApiService {
    */
   geocodeAddress(address: string): Observable<[number, number] | null> {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-      address
+      address,
     )}`;
     return this.http.get<any[]>(url).pipe(
       map((data: any[]) => {
@@ -149,7 +138,7 @@ export class ApiService {
           return [longitude, latitude] as [number, number];
         }
         return null;
-      })
+      }),
     );
   }
 
@@ -160,7 +149,7 @@ export class ApiService {
    */
   getAddress(coordinates: string): Observable<string | null> {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-      coordinates
+      coordinates,
     )}`;
     return this.http.get<any[]>(url).pipe(
       map((data: any[]) => {
@@ -169,7 +158,7 @@ export class ApiService {
           return firstResult.display_name;
         }
         return null;
-      })
+      }),
     );
   }
 
@@ -183,10 +172,7 @@ export class ApiService {
     delete j.createdAt;
     delete j.updatedAt;
     delete j.__v;
-    return this.http.put<Journey>(
-      this.backendUrl + '/journey/' + journey._id,
-      j
-    );
+    return this.http.put<Journey>(this.backendUrl + '/journey/' + journey._id, j);
   }
 
   createJourney(journey: Journey) {

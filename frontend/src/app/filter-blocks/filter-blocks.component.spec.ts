@@ -44,7 +44,12 @@ describe('FilterBlocksComponent', () => {
 
   it('exposes only positive tag filters as tags', async () => {
     const negatedTag = { ...tagFilter('x'), negate: true };
-    const other: Filter = { key: 'title', operation: FilterOperations.MATCHES, negate: false, value: 'a' };
+    const other: Filter = {
+      key: 'title',
+      operation: FilterOperations.MATCHES,
+      negate: false,
+      value: 'a',
+    };
     component.filterSet = [tagFilter('a'), negatedTag, other];
 
     expect(await firstValueFrom(component.tagFilters$)).toEqual([tagFilter('a')]);
@@ -66,7 +71,9 @@ describe('FilterBlocksComponent', () => {
     ];
     expect(await firstValueFrom(component.hasAdvancedFilters$)).toBe(false);
 
-    component.filterSet = [{ key: 'title', operation: FilterOperations.CONTAINS, negate: false, value: 'x' }];
+    component.filterSet = [
+      { key: 'title', operation: FilterOperations.CONTAINS, negate: false, value: 'x' },
+    ];
     expect(await firstValueFrom(component.hasAdvancedFilters$)).toBe(true);
   });
 

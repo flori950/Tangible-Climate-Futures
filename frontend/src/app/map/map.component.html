@@ -6,15 +6,12 @@
         [(ngModel)]="address"
         placeholder="{{ 'map.enter' | translate }}"
         (keydown.enter)="jumpToAddress()"
-        />
-      <mat-hint>{{ "map.hint" | translate }}</mat-hint>
+      />
+      <mat-hint>{{ 'map.hint' | translate }}</mat-hint>
 
       <div matSuffix class="right-symbols">
         @if (addressIsLoading) {
-          <mat-spinner
-            matSuffix
-            class="spinner"
-          ></mat-spinner>
+          <mat-spinner matSuffix class="spinner"></mat-spinner>
         }
         <button type="button" mat-icon-button (click)="emptyAddress()">
           <mat-icon>cancel</mat-icon>
@@ -28,30 +25,26 @@
           aria-label="Select an option"
           [(ngModel)]="drawType"
           (ngModelChange)="drawTypeChange()"
-          >
+        >
           <mat-radio-button value="CIRCLE">Radius</mat-radio-button>
           <mat-radio-button value="POLYGON">Polygon</mat-radio-button>
         </mat-radio-group>
         <mat-chip-listbox selectable (change)="chipSelectionChanged($event)">
           @for (area of searchAreas; track area) {
-            <mat-chip-option
-              [removable]="true"
-              (removed)="removeChip(area.id)"
-              selectable
-              >{{ area.name
-              }}<mat-icon matChipRemove>cancel</mat-icon></mat-chip-option
-              >
-            }
-          </mat-chip-listbox>
-        </div>
-      }
-    </div>
-
-    <div #map class="map-container"></div>
-
-    @if (enableDrawFeatures === false) {
-      <div id="popup" class="ol-popup">
-        <div id="popup-content"></div>
+            <mat-chip-option [removable]="true" (removed)="removeChip(area.id)" selectable
+              >{{ area.name }}<mat-icon matChipRemove>cancel</mat-icon></mat-chip-option
+            >
+          }
+        </mat-chip-listbox>
       </div>
     }
   </div>
+
+  <div #map class="map-container"></div>
+
+  @if (enableDrawFeatures === false) {
+    <div id="popup" class="ol-popup">
+      <div id="popup-content"></div>
+    </div>
+  }
+</div>

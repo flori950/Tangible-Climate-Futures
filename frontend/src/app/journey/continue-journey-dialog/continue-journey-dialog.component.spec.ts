@@ -44,9 +44,13 @@ describe('ContinueJourneyDialogComponent', () => {
 
   it('validates the title', () => {
     component.titleControl.setValue('');
-    expect(component.getControlErrorMessage(component.titleControl)).toBe('continueJourneyDialog.requiredError');
+    expect(component.getControlErrorMessage(component.titleControl)).toBe(
+      'continueJourneyDialog.requiredError',
+    );
     component.titleControl.setValue('ab');
-    expect(component.getControlErrorMessage(component.titleControl)).toBe('continueJourneyDialog.minLengthError');
+    expect(component.getControlErrorMessage(component.titleControl)).toBe(
+      'continueJourneyDialog.minLengthError',
+    );
     component.titleControl.setValue('abc');
     expect(component.titleControl.valid).toBe(true);
   });

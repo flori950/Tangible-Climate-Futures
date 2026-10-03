@@ -1,8 +1,4 @@
-import {
-  provideHttpClient,
-  withInterceptorsFromDi,
-  withXhr
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';

@@ -64,7 +64,9 @@ describe('DataDisplayComponent', () => {
     fixture.componentRef.setInput('data', metadataOnly);
     fixture.detectChanges();
 
-    const req = TestBed.inject(HttpTestingController).expectOne('http://localhost:40000/api/datafile/n1');
+    const req = TestBed.inject(HttpTestingController).expectOne(
+      'http://localhost:40000/api/datafile/n1',
+    );
     req.flush({ a: 1 });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('ngx-json-viewer')).not.toBeNull();

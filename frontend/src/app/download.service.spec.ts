@@ -8,7 +8,14 @@ import { NotificationService } from './notification.service';
 import { ApiService } from './shared/service/api.service';
 
 function datafile(id: string): Datafile {
-  return { _id: id, title: id, tags: [], dataSet: 'NONE', dataType: DataType.NOTREFERENCED, content: { data: {} } };
+  return {
+    _id: id,
+    title: id,
+    tags: [],
+    dataSet: 'NONE',
+    dataType: DataType.NOTREFERENCED,
+    content: { data: {} },
+  };
 }
 
 describe('DownloadService', () => {
@@ -44,7 +51,9 @@ describe('DownloadService', () => {
   });
 
   it('downloads JSON through a temporary link with a blob url', () => {
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
     const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
 
     service.downloadAsJSON({ a: 1 }, 'file.json');
@@ -57,7 +66,9 @@ describe('DownloadService', () => {
   });
 
   it('downloads all collections of a journey without its excluded files', () => {
-    filterDatafiles.mockReturnValue(of({ skip: 0, limit: 0, totalCount: 2, results: [datafile('a'), datafile('b')] }));
+    filterDatafiles.mockReturnValue(
+      of({ skip: 0, limit: 0, totalCount: 2, results: [datafile('a'), datafile('b')] }),
+    );
     const downloadAsJSON = vi.spyOn(service, 'downloadAsJSON').mockImplementation(() => undefined);
 
     service.downloadJourney(journey);
@@ -68,7 +79,9 @@ describe('DownloadService', () => {
   });
 
   it('prefers explicitly passed excluded ids over the journey ones', () => {
-    filterDatafiles.mockReturnValue(of({ skip: 0, limit: 0, totalCount: 2, results: [datafile('a'), datafile('b')] }));
+    filterDatafiles.mockReturnValue(
+      of({ skip: 0, limit: 0, totalCount: 2, results: [datafile('a'), datafile('b')] }),
+    );
     const downloadAsJSON = vi.spyOn(service, 'downloadAsJSON').mockImplementation(() => undefined);
 
     service.downloadJourney(journey, new Set(['a']));

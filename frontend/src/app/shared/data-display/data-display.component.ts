@@ -1,20 +1,15 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
-import {
-  DataType,
-  MediaType,
-  NotRefDataFile,
-  RefDataFile,
-} from '@common/types';
+import { DataType, MediaType, NotRefDataFile, RefDataFile } from '@common/types';
 
 import { Observable, of } from 'rxjs';
 import { ApiService } from '../service/api.service';
 
 @Component({
-    selector: 'app-data-display',
-    templateUrl: './data-display.component.html',
-    styleUrls: ['./data-display.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-data-display',
+  templateUrl: './data-display.component.html',
+  styleUrls: ['./data-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DataDisplayComponent implements OnChanges {
   @Input({ required: true })
@@ -37,10 +32,7 @@ export class DataDisplayComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['data'] || this.data == null) return;
-    if (
-      this.data.dataType == DataType.NOTREFERENCED &&
-      this.data.content.data == null
-    ) {
+    if (this.data.dataType == DataType.NOTREFERENCED && this.data.content.data == null) {
       this.localData$ = this.apiService.getDatafile(this.data._id!);
     } else {
       this.localData$ = of((this.data as NotRefDataFile).content.data);

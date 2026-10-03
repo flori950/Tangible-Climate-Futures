@@ -1,5 +1,4 @@
 <div class="full-page input-container">
-
   <div class="header-row">
     <button mat-icon-button routerLink="/upload-data" color="primary">
       <mat-icon>arrow_back</mat-icon>
@@ -37,21 +36,27 @@
     <mat-chip-grid #chipGrid>
       @for (selectedKeyword of selectedKeywords; track selectedKeyword) {
         <mat-chip-row (removed)="remove(selectedKeyword)">
-          {{selectedKeyword}}
+          {{ selectedKeyword }}
           <button matChipRemove [attr.aria-label]="'remove ' + selectedKeyword">
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>
       }
     </mat-chip-grid>
-    <input placeholder="{{ 'createUpdateDatafile.newTagPlaceholder' | translate }}" #keywordInput
-      [formControl]="keywordFormControl" [matChipInputFor]="chipGrid" [matAutocomplete]="auto"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes" (matChipInputTokenEnd)="add($event)" />
+    <input
+      placeholder="{{ 'createUpdateDatafile.newTagPlaceholder' | translate }}"
+      #keywordInput
+      [formControl]="keywordFormControl"
+      [matChipInputFor]="chipGrid"
+      [matAutocomplete]="auto"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)"
+    />
     <mat-hint>{{ 'createUpdateDatafile.tagInfo' | translate }}</mat-hint>
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
       @for (keyword of filteredKeywords | async; track keyword) {
         <mat-option [value]="keyword">
-          {{keyword}}
+          {{ keyword }}
         </mat-option>
       }
     </mat-autocomplete>
@@ -60,12 +65,16 @@
   @if (datasetType === DatasetFileTypeEnums.CERV2) {
     <mat-form-field class="margin-bottom">
       <mat-label>{{ 'datafile.steps' | translate }}</mat-label>
-      <input type="number" matInput [(ngModel)]="steps">
+      <input type="number" matInput [(ngModel)]="steps" />
     </mat-form-field>
   }
 
-
-  <button mat-raised-button color="primary" (click)="uploadData()" [disabled]="!formIsValid() || this.isLoading">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="uploadData()"
+    [disabled]="!formIsValid() || this.isLoading"
+  >
     <div class="button-row">
       <span>{{ 'createUpdateDatafile.headerUpload' | translate }}</span>
       @if (isLoading) {
@@ -74,4 +83,3 @@
     </div>
   </button>
 </div>
-

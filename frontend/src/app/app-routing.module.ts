@@ -7,11 +7,7 @@ import { SupportedDatasetsUploadComponent } from './upload-data/supportedDataset
 import { UploadDataComponent } from './upload-data/upload-data.component';
 import { ViewDatasetsComponent } from './view-datasets/view-datasets.component';
 import { BrowseJourneyComponent } from './browse-journey/browse-journey.component';
-import {
-  AuthGuard,
-  redirectLoggedInTo,
-  redirectUnauthorizedTo,
-} from '@angular/fire/auth-guard';
+import { AuthGuard, redirectLoggedInTo, redirectUnauthorizedTo } from '@angular/fire/auth-guard';
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['auth/login']);
 
@@ -20,8 +16,7 @@ const redirectLoggedInToDashboard = () => redirectLoggedInTo(['dashboard']);
 const routes: Routes = [
   {
     path: 'dashboard',
-    loadChildren: () =>
-      import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
+    loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
     canActivate: [AuthGuard],
     data: { authGuardPipe: redirectUnauthorizedToLogin },
   },
@@ -31,8 +26,7 @@ const routes: Routes = [
   },
   {
     path: 'journey',
-    loadChildren: () =>
-      import('./journey/journey.module').then((m) => m.JourneyModule),
+    loadChildren: () => import('./journey/journey.module').then((m) => m.JourneyModule),
   },
   { path: 'upload-data', component: UploadDataComponent },
   { path: 'data-sets', component: ViewDatasetsComponent },

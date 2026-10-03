@@ -10,7 +10,8 @@ describe('ThreeJSComponent', () => {
   });
 
   const component = new ThreeJSComponent();
-  const convert = (longitude: number, latitude: number) => component.convertCoordinates(longitude, latitude);
+  const convert = (longitude: number, latitude: number) =>
+    component.convertCoordinates(longitude, latitude);
 
   it('maps the scene origin coordinates to (0, 0, 0)', () => {
     const { x, y, z } = convert(13.327974301530459, 52.513091975725075);

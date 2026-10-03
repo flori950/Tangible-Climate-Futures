@@ -80,7 +80,11 @@ describe('RawDatasetsUploadComponent', () => {
 
     component.uploadData();
 
-    expect(createDatafileWithFile).toHaveBeenCalledWith(expect.objectContaining({ title: 'x' }), expect.any(File), 'CSV');
+    expect(createDatafileWithFile).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'x' }),
+      expect.any(File),
+      'CSV',
+    );
     expect(component.title).toBeUndefined();
     expect(component.isLoading).toBe(false);
     expect(showInfo).toHaveBeenCalledOnce();
@@ -88,7 +92,9 @@ describe('RawDatasetsUploadComponent', () => {
 
   it('stops the spinner when the upload fails', () => {
     create('/upload-data/csv');
-    createDatafileWithFile.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+    createDatafileWithFile.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 500 })),
+    );
     component.title = 'x';
     component.selectedKeywords = ['k'];
     component.file = new File(['a'], 'a.csv');

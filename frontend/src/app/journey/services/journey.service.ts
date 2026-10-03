@@ -28,7 +28,7 @@ import {
   skip,
   switchMap,
   takeUntil,
-  tap
+  tap,
 } from 'rxjs';
 import { colors } from '../../../util/colors';
 import { isMapFilter } from '../../../util/filter-utils';
@@ -61,17 +61,13 @@ export class JourneyService {
    */
   journey$ = this.journeySubject.asObservable();
 
-  private excludedDataFilesSubject = new BehaviorSubject<Set<string>>(
-    new Set()
-  );
+  private excludedDataFilesSubject = new BehaviorSubject<Set<string>>(new Set());
   /**
    * Set of ids of selected DataFiles which can be manipulated by `.selectDataFiles(...)` and `.deselectDataFiles(...)` of this service.
    */
   excludedDataFiles$ = this.excludedDataFilesSubject.asObservable();
 
-  private selectedCollectionSubject = new BehaviorSubject<Collection | null>(
-    null
-  );
+  private selectedCollectionSubject = new BehaviorSubject<Collection | null>(null);
   /**
    * Provides one Collection of the Journey which can be selected with `.selectCollection(...)`.
    */
@@ -80,87 +76,80 @@ export class JourneyService {
   /**
    * Used to inform collectionsData$ that one collection has changed data.
    */
-  private triggerCollectionChangeSubject =
-    new BehaviorSubject<Collection | null>(null);
+  private triggerCollectionChangeSubject = new BehaviorSubject<Collection | null>(null);
   /**
    * Used to reload the DataFiles of a Collection in collectionsData$. Used for filter changes.
    */
-  private triggerCollectionReloadSubject =
-    new BehaviorSubject<Collection | null>(null);
+  private triggerCollectionReloadSubject = new BehaviorSubject<Collection | null>(null);
 
   /**
    * Provides the Collections of the Journey with enriched information. This includes a generated color, fetched DataFiles and the selected DataFiles.
    */
-  collectionsData$: Observable<Observable<CollectionData>[]> =
-    this.journey$.pipe(
-      map((journey) => {
-        if (journey == null || journey.collections.length == 0) return [];
-        // Reset the change triggers, so all collection load once.
-        this.triggerCollectionChangeSubject.next(null);
-        this.triggerCollectionReloadSubject.next(null);
+  collectionsData$: Observable<Observable<CollectionData>[]> = this.journey$.pipe(
+    map((journey) => {
+      if (journey == null || journey.collections.length == 0) return [];
+      // Reset the change triggers, so all collection load once.
+      this.triggerCollectionChangeSubject.next(null);
+      this.triggerCollectionReloadSubject.next(null);
 
-        // Map each Collection an Observable to its CollectionData.
-        return journey.collections.map((collection, i) =>
-          this.triggerCollectionReloadSubject.pipe(
-            //complete the observable when a new Journey emits
-            takeUntil(this.journey$.pipe(skip(1))),
-            filter((col) => col == collection || col == null),
-            switchMap(() =>
-              combineLatest([
-                this.getCollectionDataFiles(collection),
-                this.excludedDataFiles$,
-                this.triggerCollectionChangeSubject.pipe(
-                  filter((col) => col == collection || col == null)
-                ),
-              ]).pipe(
-                map(([files, excludedIdsSet, _]) => {
-                  return {
-                    collection: collection,
-                    files: files,
-                    color: colors[i],
-                    selectedFilesIds: new Set(
-                      files.results
-                        .filter((result) => !excludedIdsSet.has(result._id!))
-                        .map((result) => result._id!)
-                    ),
-                  } as CollectionData;
-                })
-              )
+      // Map each Collection an Observable to its CollectionData.
+      return journey.collections.map((collection, i) =>
+        this.triggerCollectionReloadSubject.pipe(
+          //complete the observable when a new Journey emits
+          takeUntil(this.journey$.pipe(skip(1))),
+          filter((col) => col == collection || col == null),
+          switchMap(() =>
+            combineLatest([
+              this.getCollectionDataFiles(collection),
+              this.excludedDataFiles$,
+              this.triggerCollectionChangeSubject.pipe(
+                filter((col) => col == collection || col == null),
+              ),
+            ]).pipe(
+              map(([files, excludedIdsSet, _]) => {
+                return {
+                  collection: collection,
+                  files: files,
+                  color: colors[i],
+                  selectedFilesIds: new Set(
+                    files.results
+                      .filter((result) => !excludedIdsSet.has(result._id!))
+                      .map((result) => result._id!),
+                  ),
+                } as CollectionData;
+              }),
             ),
-            shareReplay(1)
-          )
-        );
-      }),
-      shareReplay(1)
-    );
+          ),
+          shareReplay(1),
+        ),
+      );
+    }),
+    shareReplay(1),
+  );
 
   constructor(
     private apiService: ApiService,
     private downloadService: DownloadService,
     private dialog: MatDialog,
-    private auth: AuthService
+    private auth: AuthService,
   ) {
     // This subscription selects all new DataFiles and deselects all that got removed by filtering
     this.collectionsData$
       .pipe(
         switchMap((collectionsData) =>
-          collectionsData.length == 0 ? of([]) : combineLatest(collectionsData)
+          collectionsData.length == 0 ? of([]) : combineLatest(collectionsData),
         ),
         // I don't know if it is a Bug or if I am missing something, but without the delay(0) the output of the collectionsData$ results are inverted...
         // this leads to that no points are shown on the map on first load.
         delay(0),
         map((data) =>
-          data.reduce(
-            (results, d) => results.concat(d.files.results),
-            [] as Datafile[]
-          )
+          data.reduce((results, d) => results.concat(d.files.results), [] as Datafile[]),
         ),
-        pairwise()
+        pairwise(),
       )
       .subscribe(([previous, current]) => {
         const removedDataFiles = previous.filter(
-          (prevData) =>
-            !current.find((currData) => prevData._id == currData._id)
+          (prevData) => !current.find((currData) => prevData._id == currData._id),
         );
         if (removedDataFiles.length) {
           this.deselectDataFiles(...removedDataFiles);
@@ -201,7 +190,7 @@ export class JourneyService {
           finalize(() => {
             returnSubject.next(true);
             returnSubject.complete();
-          })
+          }),
         )
         .subscribe((val) => this.journeySubject.next(val));
 
@@ -210,20 +199,15 @@ export class JourneyService {
       .pipe(
         filter((journey) => journey != null),
         first(),
-        tap((journey) =>
-          this.excludedDataFilesSubject.next(
-            new Set(journey?.excludedIDs || [])
-          )
-        ),
+        tap((journey) => this.excludedDataFilesSubject.next(new Set(journey?.excludedIDs || []))),
         filter(
           (journey) =>
             journey != null &&
             journey.collections.find(
-              (collection) =>
-                collection.title == this.selectedCollectionSubject.value?.title
-            ) == null
+              (collection) => collection.title == this.selectedCollectionSubject.value?.title,
+            ) == null,
         ),
-        map((journey) => journey!.collections[0])
+        map((journey) => journey!.collections[0]),
       )
       .subscribe((val) => {
         this.selectedCollectionSubject.next(val);
@@ -291,7 +275,7 @@ export class JourneyService {
 
     return savedJourney.asObservable();
   }
- 
+
   /**
    * Downloads all selected data files of the collection in the journey in one JSON files
    */
@@ -310,9 +294,7 @@ export class JourneyService {
       collection != null &&
       !this.journeySubject.value.collections.find((col) => col == collection)
     )
-      throw Error(
-        'This Collection is not part of the currently loaded Journey!'
-      );
+      throw Error('This Collection is not part of the currently loaded Journey!');
     this.selectedCollectionSubject.next(collection);
   }
 
@@ -321,9 +303,7 @@ export class JourneyService {
    */
   addCollection() {
     if (!this.journeySubject.value)
-      return console.warn(
-        'You tried to call addCollection when no Journey was loaded'
-      );
+      return console.warn('You tried to call addCollection when no Journey was loaded');
     const journey = this.journeySubject.value;
     const collectionTitle = (i: number) => `Collection #${i}`;
     const newCollection = {
@@ -332,14 +312,12 @@ export class JourneyService {
         (() => {
           let i = 1;
           while (
-            this.journeySubject.value?.collections.find(
-              (col) => col.title == collectionTitle(i)
-            )
+            this.journeySubject.value?.collections.find((col) => col.title == collectionTitle(i))
           ) {
             i++;
           }
           return i;
-        })()
+        })(),
       ),
       filterSet: [],
     };
@@ -353,20 +331,13 @@ export class JourneyService {
    */
   deleteCollection(collection: Collection) {
     if (!this.journeySubject.value)
-      return console.warn(
-        'You tried to call deleteCollection when no Journey was loaded'
-      );
+      return console.warn('You tried to call deleteCollection when no Journey was loaded');
     const journey = this.journeySubject.value;
     const index = journey.collections.findIndex((col) => col == collection);
-    if (index < 0)
-      throw Error(
-        'This Collection is not part of the currently loaded Journey!'
-      );
+    if (index < 0) throw Error('This Collection is not part of the currently loaded Journey!');
     journey.collections.splice(index, 1);
     if (this.selectedCollectionSubject.value == collection) {
-      this.selectCollection(
-        journey.collections?.length ? journey.collections[0] : null
-      );
+      this.selectCollection(journey.collections?.length ? journey.collections[0] : null);
     }
     this.journeySubject.next(journey);
   }
@@ -401,9 +372,9 @@ export class JourneyService {
       map(
         (excluded) =>
           ids.find((id) => !excluded.has(id)) != null &&
-          !(ids.find((id) => excluded.has(id)) == null)
+          !(ids.find((id) => excluded.has(id)) == null),
       ),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 
@@ -415,7 +386,7 @@ export class JourneyService {
   allDataFilesSelected$(...ids: string[]) {
     return this.excludedDataFiles$.pipe(
       map((excluded) => ids.find((id) => excluded.has(id)) == null),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 
@@ -428,13 +399,9 @@ export class JourneyService {
   addMapFilters(filters: (RadiusFilter | AreaFilter)[]) {
     const collection = this.selectedCollectionSubject.value;
     if (collection == null)
-      return console.warn(
-        'You tried to call addMapFilters when no Collection was selected.'
-      );
+      return console.warn('You tried to call addMapFilters when no Collection was selected.');
 
-    const mapFilters = collection.filterSet.filter((filter) =>
-      isMapFilter(filter)
-    );
+    const mapFilters = collection.filterSet.filter((filter) => isMapFilter(filter));
 
     for (const filter of filters) {
       if (mapFilters.find((mapFilter) => mapFilter == filter) == null) {
@@ -458,9 +425,7 @@ export class JourneyService {
    * @param collection Collection to fetch from
    * @returns a PaginationResult of the DataFiles
    */
-  getCollectionDataFiles(
-    collection: Collection
-  ): Observable<PaginationResult<Datafile>> {
+  getCollectionDataFiles(collection: Collection): Observable<PaginationResult<Datafile>> {
     if (collection.filterSet.length == 0)
       return of({
         skip: 0,
@@ -468,11 +433,6 @@ export class JourneyService {
         totalCount: 0,
         results: [],
       });
-    return this.apiService.filterDatafiles(
-      { filterSet: collection.filterSet },
-      999999,
-      0,
-      true
-    );
+    return this.apiService.filterDatafiles({ filterSet: collection.filterSet }, 999999, 0, true);
   }
 }

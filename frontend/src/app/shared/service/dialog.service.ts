@@ -7,16 +7,14 @@ import { DataDisplayDialogComponent } from '../data-display/data-display-dialog/
  * Service, which opens a respective component in a dialog.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DialogService {
+  constructor(private readonly dialog: MatDialog) {}
 
-  constructor(private readonly dialog: MatDialog) { }
-
-  openDisplayDataDialog(datafile: RefDataFile | NotRefDataFile){
+  openDisplayDataDialog(datafile: RefDataFile | NotRefDataFile) {
     this.dialog.open(DataDisplayDialogComponent, {
-      data: {datafile},
+      data: { datafile },
     });
-
   }
 }

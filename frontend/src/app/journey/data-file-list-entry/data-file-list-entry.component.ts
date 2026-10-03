@@ -6,11 +6,11 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import { DialogService } from '../../shared/service/dialog.service';
 
 @Component({
-    selector: 'app-data-file-list-entry',
-    templateUrl: './data-file-list-entry.component.html',
-    styleUrls: ['./data-file-list-entry.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-data-file-list-entry',
+  templateUrl: './data-file-list-entry.component.html',
+  styleUrls: ['./data-file-list-entry.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DataFileListEntryComponent implements OnChanges {
   @Input({ required: true }) file!: Datafile;
@@ -19,14 +19,11 @@ export class DataFileListEntryComponent implements OnChanges {
 
   constructor(
     private journeyService: JourneyService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (
-      changes['file'] &&
-      changes['file'].previousValue?._id != changes['file'].currentValue?._id
-    )
+    if (changes['file'] && changes['file'].previousValue?._id != changes['file'].currentValue?._id)
       this.isSelected$ = this.journeyService.allDataFilesSelected$(this.file._id!);
   }
 
@@ -36,8 +33,6 @@ export class DataFileListEntryComponent implements OnChanges {
   }
 
   viewFile() {
-    this.dialogService.openDisplayDataDialog(
-      this.file as RefDataFile | NotRefDataFile
-    );
+    this.dialogService.openDisplayDataDialog(this.file as RefDataFile | NotRefDataFile);
   }
 }

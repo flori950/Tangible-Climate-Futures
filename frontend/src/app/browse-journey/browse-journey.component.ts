@@ -9,24 +9,18 @@ import { ApiService } from '../shared/service/api.service';
 
 /**
  * This component displays a paged view of the journeys, which match the current filters.
- * Also, it allows for the download and continuation of journeys. 
+ * Also, it allows for the download and continuation of journeys.
  */
 @Component({
-    selector: 'app-browse-journey',
-    templateUrl: './browse-journey.component.html',
-    styleUrls: ['./browse-journey.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-browse-journey',
+  templateUrl: './browse-journey.component.html',
+  styleUrls: ['./browse-journey.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class BrowseJourneyComponent implements OnInit {
-  dataSource : Journey[] = [];
-  displayedColumns: string[] = [
-    'title',
-    'description',
-    'tags',
-    'author',
-    'buttons',
-  ];
+  dataSource: Journey[] = [];
+  displayedColumns: string[] = ['title', 'description', 'tags', 'author', 'buttons'];
 
   totalCount?: number;
   skip = 0;
@@ -43,7 +37,7 @@ export class BrowseJourneyComponent implements OnInit {
     private apiService: ApiService,
     private notificationService: NotificationService,
     private translate: TranslateService,
-    private downloadService: DownloadService
+    private downloadService: DownloadService,
   ) {}
 
   ngOnInit() {
@@ -71,9 +65,7 @@ export class BrowseJourneyComponent implements OnInit {
 
   delete(id: string) {
     this.apiService.deleteJourney(id).subscribe(() => {
-      const deleteSuccessMessage = this.translate.instant(
-        'viewAllJourney.deleteSuccess'
-      );
+      const deleteSuccessMessage = this.translate.instant('viewAllJourney.deleteSuccess');
       this.notificationService.showInfo(deleteSuccessMessage);
       this.loadData();
     });
@@ -81,7 +73,7 @@ export class BrowseJourneyComponent implements OnInit {
 
   onPageChange(event: PageEvent) {
     this.limit = event.pageSize;
-    this.skip = this.limit * event.pageIndex
+    this.skip = this.limit * event.pageIndex;
     this.loadData();
   }
 
@@ -89,7 +81,7 @@ export class BrowseJourneyComponent implements OnInit {
    * Retrieves the data set from the journey and creates a download
    * @param journey The Journey, from which the data set should be downloaded
    */
-  download(journey: Journey){
+  download(journey: Journey) {
     this.downloadService.downloadJourney(journey);
   }
 }

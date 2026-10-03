@@ -12,12 +12,14 @@ import { MapComponent } from '../../map/map.component';
 import { CoordinateService } from '../../shared/service/coordinate.service';
 import { NotificationService } from '../../notification.service';
 import { DataType, Datafile, NotRef } from '../../../../../common/types/datafile';
-import { SupportedDatasetFileTypes, SupportedRawFileTypes } from '../../../../../common/types/supportedFileTypes';
-
+import {
+  SupportedDatasetFileTypes,
+  SupportedRawFileTypes,
+} from '../../../../../common/types/supportedFileTypes';
 
 /**
  * The Component includes the upload of files, which are not datasets.
- * 
+ *
  * Sources:
  * We use the components and examples from https://material.angular.io/components/categories.
  * In particular, we use and adopted the code from:
@@ -25,22 +27,22 @@ import { SupportedDatasetFileTypes, SupportedRawFileTypes } from '../../../../..
  * https://material.angular.io/components/select/overview for the dropdown
  */
 @Component({
-    templateUrl: './rawDatasets.component.html',
-    styleUrls: ['./rawDatasets.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  templateUrl: './rawDatasets.component.html',
+  styleUrls: ['./rawDatasets.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class RawDatasetsUploadComponent {
   RawDatasetTypeEnum = SupportedRawFileTypes;
   rawDatasetType?: SupportedRawFileTypes;
-  acceptFileFormat = "";
+  acceptFileFormat = '';
 
   id?: string | null;
   title?: string;
   description?: string;
   isReferencedData = false;
   selectedKeywords: string[] = [];
-  
+
   file?: File;
   longitude?: number;
   latitude?: number;
@@ -60,29 +62,37 @@ export class RawDatasetsUploadComponent {
   @ViewChild('keywordInput') keywordInput?: ElementRef<HTMLInputElement>;
 
   @ViewChild('uploadMapComponent')
-  uploadMapComponent?: MapComponent
+  uploadMapComponent?: MapComponent;
 
-  constructor(private coordinateService: CoordinateService, private apiService: ApiService, private router: Router, private activatedRoute: ActivatedRoute,
-    private notificationService: NotificationService, private translate: TranslateService) {
+  constructor(
+    private coordinateService: CoordinateService,
+    private apiService: ApiService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private notificationService: NotificationService,
+    private translate: TranslateService,
+  ) {
     this.filteredKeywords = this.keywordFormControl.valueChanges.pipe(
       startWith(null),
-      map((keyword: string | null) => (keyword ? this.filter(keyword) : this.availablePredefinedKeywords.slice())),
+      map((keyword: string | null) =>
+        keyword ? this.filter(keyword) : this.availablePredefinedKeywords.slice(),
+      ),
     );
 
     //Set types and allowed file format
-    if (router.url.startsWith("/upload-data/json")) {
+    if (router.url.startsWith('/upload-data/json')) {
       this.rawDatasetType = SupportedRawFileTypes.JSON;
-      this.acceptFileFormat = ".json"
-    } else if (router.url.startsWith("/upload-data/csv")) {
+      this.acceptFileFormat = '.json';
+    } else if (router.url.startsWith('/upload-data/csv')) {
       this.rawDatasetType = SupportedRawFileTypes.CSV;
-      this.acceptFileFormat = ".csv"
-    } else if (router.url.startsWith("/upload-data/txt")) {
+      this.acceptFileFormat = '.csv';
+    } else if (router.url.startsWith('/upload-data/txt')) {
       this.rawDatasetType = SupportedRawFileTypes.TXT;
-      this.acceptFileFormat = ".txt"
-    } else if (router.url.startsWith("/netcdf")) {
+      this.acceptFileFormat = '.txt';
+    } else if (router.url.startsWith('/netcdf')) {
       // this.rawDatasetType = RawDatasetType.NETCDF;
       // this.acceptFileFormat = ".netcdf"
-      console.error("NETCDF IS NOT SUPPORTED YET")
+      console.error('NETCDF IS NOT SUPPORTED YET');
     }
   }
 
@@ -126,7 +136,8 @@ export class RawDatasetsUploadComponent {
   }
 
   formIsValid(): boolean {
-    const commonDataIsValid = this.title != null && this.title.length > 0 && this.selectedKeywords.length > 0;
+    const commonDataIsValid =
+      this.title != null && this.title.length > 0 && this.selectedKeywords.length > 0;
 
     if (!commonDataIsValid) {
       return false;
@@ -138,7 +149,9 @@ export class RawDatasetsUploadComponent {
   private filter(value: string): string[] {
     const filterValue = value.toLowerCase();
 
-    return this.availablePredefinedKeywords.filter(keyword => keyword.toLowerCase().includes(filterValue));
+    return this.availablePredefinedKeywords.filter((keyword) =>
+      keyword.toLowerCase().includes(filterValue),
+    );
   }
 
   /** Creates a new data file */
@@ -156,19 +169,21 @@ export class RawDatasetsUploadComponent {
         this.resetForm();
         const creationSuccessfull = this.translate.instant('createUpdateDatafile.creationSuccess');
         this.notificationService.showInfo(creationSuccessfull);
-    },
+      },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        if(err.status === 422){
-          const creationSuccessfull = this.translate.instant('createUpdateDatafile.fileAttachError');
+        if (err.status === 422) {
+          const creationSuccessfull = this.translate.instant(
+            'createUpdateDatafile.fileAttachError',
+          );
           this.notificationService.showInfo(creationSuccessfull);
         } else {
           const errorMsg = this.translate.instant('createUpdateDatafile.error');
           this.notificationService.showInfo(errorMsg);
         }
-      }});
+      },
+    });
   }
-
 
   handleCoordinateChange(coords: [number, number]) {
     const transformedCoord = this.coordinateService.transformToLongLat(coords);
@@ -186,16 +201,19 @@ export class RawDatasetsUploadComponent {
     this.latitude = undefined;
 
     if (this.uploadMapComponent) {
-      this.uploadMapComponent.resetMap()
+      this.uploadMapComponent.resetMap();
     }
   }
 
   /** Transforms the values of the form into a datafile object */
   toDataFile(): Datafile {
-    const content:  NotRef = {
-        data: JSON.parse("{}"),
-        location: this.longitude != null && this.latitude != null ? { type: 'Point', coordinates: [this.longitude!, this.latitude!] } : undefined
-    }
+    const content: NotRef = {
+      data: JSON.parse('{}'),
+      location:
+        this.longitude != null && this.latitude != null
+          ? { type: 'Point', coordinates: [this.longitude!, this.latitude!] }
+          : undefined,
+    };
 
     return {
       title: this.title!,
@@ -203,11 +221,9 @@ export class RawDatasetsUploadComponent {
       dataType: this.isReferencedData === true ? DataType.REFERENCED : DataType.NOTREFERENCED,
       dataSet: SupportedDatasetFileTypes.NONE,
       tags: this.selectedKeywords,
-      content: content
+      content: content,
     };
   }
-
-
 
   /** Called by <app-file-drop> when a file was chosen or dropped. */
   onFileSelect(file: File) {
@@ -215,9 +231,9 @@ export class RawDatasetsUploadComponent {
     this.setTitle();
   }
 
-  private setTitle(){
-    if(this.title == null && this.file != null){
-      this.title = this.file.name.split(".").shift();
+  private setTitle() {
+    if (this.title == null && this.file != null) {
+      this.title = this.file.name.split('.').shift();
     }
   }
 }

@@ -56,7 +56,9 @@ describe('ApiService', () => {
   it('creates a datafile and attaches the file to the created document', () => {
     const file = new File(['a,b'], 'data.csv', { type: 'text/csv' });
     let result: unknown;
-    service.createDatafileWithFile(datafile, file, SupportedRawFileTypes.CSV).subscribe((r) => (result = r));
+    service
+      .createDatafileWithFile(datafile, file, SupportedRawFileTypes.CSV)
+      .subscribe((r) => (result = r));
 
     const create = http.expectOne(`${API}/datafile`);
     expect(create.request.method).toBe('POST');
@@ -73,7 +75,9 @@ describe('ApiService', () => {
 
   it('uploads datasets as multipart form data', () => {
     const file = new File(['x'], 'cerv2.nc');
-    service.createDatasetFromFile(file, SupportedDatasetFileTypes.CERV2, ['a', 'b'], 'desc', 3).subscribe();
+    service
+      .createDatasetFromFile(file, SupportedDatasetFileTypes.CERV2, ['a', 'b'], 'desc', 3)
+      .subscribe();
 
     const req = http.expectOne(`${API}/datafile/fromFile`);
     const body = req.request.body as FormData;
@@ -85,7 +89,15 @@ describe('ApiService', () => {
   });
 
   it('only sends "steps" for CERV2 datasets and omits empty tags', () => {
-    service.createDatasetFromFile(new File(['x'], 'simra'), SupportedDatasetFileTypes.SIMRA, [], undefined, 3).subscribe();
+    service
+      .createDatasetFromFile(
+        new File(['x'], 'simra'),
+        SupportedDatasetFileTypes.SIMRA,
+        [],
+        undefined,
+        3,
+      )
+      .subscribe();
 
     const body = http.expectOne(`${API}/datafile/fromFile`).request.body as FormData;
     expect(body.has('steps')).toBe(false);
@@ -125,7 +137,9 @@ describe('ApiService', () => {
     let coordinates: [number, number] | null | undefined;
     service.geocodeAddress('Straße des 17. Juni').subscribe((c) => (coordinates = c));
 
-    const req = http.expectOne((r) => r.url.startsWith('https://nominatim.openstreetmap.org/search'));
+    const req = http.expectOne((r) =>
+      r.url.startsWith('https://nominatim.openstreetmap.org/search'),
+    );
     expect(req.request.url).toContain(encodeURIComponent('Straße des 17. Juni'));
     req.flush([{ lon: '13.32', lat: '52.51' }]);
     expect(coordinates).toEqual([13.32, 52.51]);

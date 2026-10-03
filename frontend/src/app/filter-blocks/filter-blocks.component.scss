@@ -1,11 +1,11 @@
-@use "@angular/material" as mat;
+@use '@angular/material' as mat;
 
 ::ng-deep {
   @include mat.form-field-density(-1);
   @include mat.button-density(-3);
 }
 
-.tags-form-field{
+.tags-form-field {
   width: 100%;
 }
 

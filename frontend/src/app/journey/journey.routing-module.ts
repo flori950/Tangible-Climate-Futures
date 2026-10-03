@@ -1,6 +1,6 @@
-import { NgModule } from "@angular/core";
-import { RouterModule, Routes } from "@angular/router";
-import { JourneyComponent } from "./journey.component";
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { JourneyComponent } from './journey.component';
 
 const routes: Routes = [
   { path: '', component: JourneyComponent },
@@ -8,6 +8,6 @@ const routes: Routes = [
 ];
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class JourneyRoutingModule{}
+export class JourneyRoutingModule {}

@@ -35,13 +35,12 @@ import { EditMapFilterDialogComponent } from '../edit-map-filter-dialog/edit-map
 import { DropdownOption } from '../filter-blocks.component';
 
 @Component({
-    selector: 'app-filter-block',
-    templateUrl: './filter-block.component.html',
-    styleUrls: ['./filter-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-filter-block',
+  templateUrl: './filter-block.component.html',
+  styleUrls: ['./filter-block.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
-
 export class FilterBlockComponent implements OnInit, OnChanges {
   @Input({ required: true }) filter!: Filter;
   @Output() onChange = new EventEmitter();
@@ -65,12 +64,10 @@ export class FilterBlockComponent implements OnInit, OnChanges {
     this.keyControl.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((key) => (this.filter.key = key ?? ''));
-    this.valueControl.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        if (isNumberFilter(this.filter)) this.filter.value = Number(value);
-        else if (isStringFilter(this.filter)) this.filter.value = String(value ?? '');
-      });
+    this.valueControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      if (isNumberFilter(this.filter)) this.filter.value = Number(value);
+      else if (isStringFilter(this.filter)) this.filter.value = String(value ?? '');
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -143,23 +140,15 @@ export class FilterBlockComponent implements OnInit, OnChanges {
   }
 
   isInputFilter(filter?: AnyFilter): filter is StringFilter | NumberFilter {
-    return (
-      isStringFilter(filter || this.filter) ||
-      isNumberFilter(filter || this.filter)
-    );
+    return isStringFilter(filter || this.filter) || isNumberFilter(filter || this.filter);
   }
 
   isStringFilter(filter?: AnyFilter): filter is StringFilter {
     return isStringFilter(filter || this.filter);
   }
 
-  isFormFieldFilter(
-    filter?: AnyFilter
-  ): filter is StringFilter | NumberFilter | BooleanFilter {
-    return (
-      this.isInputFilter(filter || this.filter) ||
-      this.isBooleanFilter(filter || this.filter)
-    );
+  isFormFieldFilter(filter?: AnyFilter): filter is StringFilter | NumberFilter | BooleanFilter {
+    return this.isInputFilter(filter || this.filter) || this.isBooleanFilter(filter || this.filter);
   }
 
   isBooleanFilter(filter?: AnyFilter): filter is BooleanFilter {

@@ -47,25 +47,36 @@ describe('BrowseJourneyComponent', () => {
   it('lists journeys and renders them as table rows', () => {
     expect(api['getJourneys']).toHaveBeenCalledWith(10, 0);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('tr.mat-mdc-row').length).toBe(1);
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('tr.mat-mdc-row').length).toBe(
+      1,
+    );
   });
 
   it('offers the journey fields as filter keys', () => {
-    expect(component.dropdownOptions.map((o) => o.value)).toEqual(['title', 'description', 'tags', 'author']);
+    expect(component.dropdownOptions.map((o) => o.value)).toEqual([
+      'title',
+      'description',
+      'tags',
+      'author',
+    ]);
   });
 
   it('only calls the filter endpoint for non-empty filter sets', () => {
     component.loadData([]);
     expect(api['filterJourneys']).not.toHaveBeenCalled();
 
-    const filterSet = [{ key: 'author', operation: FilterOperations.MATCHES, negate: false, value: 'me' } as const];
+    const filterSet = [
+      { key: 'author', operation: FilterOperations.MATCHES, negate: false, value: 'me' } as const,
+    ];
     component.loadData([...filterSet]);
     expect(api['filterJourneys']).toHaveBeenCalledWith({ filterSet }, 10, 0);
     expect(component.dataSource).toEqual([]);
   });
 
   it('downloads the data of a journey', () => {
-    const downloadJourney = vi.spyOn(TestBed.inject(DownloadService), 'downloadJourney').mockImplementation(() => undefined);
+    const downloadJourney = vi
+      .spyOn(TestBed.inject(DownloadService), 'downloadJourney')
+      .mockImplementation(() => undefined);
     component.download(journey);
     expect(downloadJourney).toHaveBeenCalledWith(journey);
   });

@@ -28,4 +28,5 @@ if (!('ResizeObserver' in globalThis)) {
 }
 
 // jsdom has no canvas implementation and logs "Not implemented" on every call.
-HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = (() =>
+  null) as typeof HTMLCanvasElement.prototype.getContext;

@@ -3,17 +3,17 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AreaFilter, RadiusFilter } from '@common/types';
 
 @Component({
-    selector: 'app-edit-map-filter-dialog',
-    templateUrl: './edit-map-filter-dialog.component.html',
-    styleUrls: ['./edit-map-filter-dialog.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-edit-map-filter-dialog',
+  templateUrl: './edit-map-filter-dialog.component.html',
+  styleUrls: ['./edit-map-filter-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class EditMapFilterDialogComponent {
   filter: RadiusFilter | AreaFilter | null;
   constructor(
     public dialogRef: MatDialogRef<EditMapFilterDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: RadiusFilter | AreaFilter
+    @Inject(MAT_DIALOG_DATA) public data: RadiusFilter | AreaFilter,
   ) {
     this.filter = JSON.parse(JSON.stringify(data));
   }

@@ -1,9 +1,4 @@
-import {
-  AnyFilter,
-  BooleanOperation,
-  Filter,
-  FilterOperations,
-} from '@common/types';
+import { AnyFilter, BooleanOperation, Filter, FilterOperations } from '@common/types';
 import {
   isAreaFilter,
   isBooleanFilter,

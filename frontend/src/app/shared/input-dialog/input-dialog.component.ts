@@ -11,17 +11,17 @@ export interface InputDialogData {
  * Dialog component for the input dialog
  */
 @Component({
-    selector: 'app-input-dialog',
-    templateUrl: './input-dialog.component.html',
-    styleUrls: ['./input-dialog.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-input-dialog',
+  templateUrl: './input-dialog.component.html',
+  styleUrls: ['./input-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class InputDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<InputDialogComponent, string>,
     @Inject(MAT_DIALOG_DATA)
-    public data: InputDialogData
+    public data: InputDialogData,
   ) {}
 
   cancel() {

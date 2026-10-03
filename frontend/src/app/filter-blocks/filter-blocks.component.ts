@@ -10,24 +10,20 @@ import {
   RadiusFilter,
   StringFilter,
 } from '@common/types';
-import {
-  BehaviorSubject,
-  combineLatest,
-  map
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import { isConcatenationFilter, isMapFilter } from '../../util/filter-utils';
 
-export interface DropdownOption  {
+export interface DropdownOption {
   value: string;
   viewValue: string;
 }
 
 @Component({
-    selector: 'app-filter-blocks',
-    templateUrl: './filter-blocks.component.html',
-    styleUrls: ['./filter-blocks.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-filter-blocks',
+  templateUrl: './filter-blocks.component.html',
+  styleUrls: ['./filter-blocks.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class FilterBlocksComponent {
   @Input() set filterSet(value: AnyFilter[]) {
@@ -46,10 +42,7 @@ export class FilterBlocksComponent {
   filterSet$ = this.filterSetSubject.asObservable();
 
   tagFilters$ = this.filterSet$.pipe(
-    map(
-      (filterSet) =>
-        filterSet.filter((filter) => this.isTag(filter)) as StringFilter[]
-    )
+    map((filterSet) => filterSet.filter((filter) => this.isTag(filter)) as StringFilter[]),
   );
 
   hasAdvancedFilters$ = combineLatest(this.filterSet$, this.tagFilters$).pipe(
@@ -58,15 +51,13 @@ export class FilterBlocksComponent {
       tagFilters,
       filterSet.filter(
         (filter) =>
-          isMapFilter(filter) &&
-          filter.negate == false &&
-          filter.key == 'content.location'
+          isMapFilter(filter) && filter.negate == false && filter.key == 'content.location',
       ) as (AreaFilter | RadiusFilter)[],
     ]),
     map(
       ([filterSet, tagFilters, mapFilters]) =>
-        filterSet.length !== tagFilters.length + mapFilters.length
-    )
+        filterSet.length !== tagFilters.length + mapFilters.length,
+    ),
   );
 
   booleanOperations = Object.keys(BooleanOperation);
@@ -92,11 +83,7 @@ export class FilterBlocksComponent {
     const filterSet = this.filterSetSubject.value;
     const filterIndex = filterSet.indexOf(filter);
     if (filter.filters.length == 2) {
-      filterSet.splice(
-        filterIndex,
-        1,
-        ...filter.filters.filter((f) => f != concFilter)
-      );
+      filterSet.splice(filterIndex, 1, ...filter.filters.filter((f) => f != concFilter));
     } else {
       filter.filters.splice(filter.filters.indexOf(concFilter), 1);
     }

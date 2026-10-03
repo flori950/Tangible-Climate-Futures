@@ -10,22 +10,15 @@ import { ApiService } from '../shared/service/api.service';
  * Allows to browse, filter, update, and delete data points
  */
 @Component({
-    selector: 'app-view-datasets',
-    templateUrl: './view-datasets.component.html',
-    styleUrls: ['./view-datasets.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-view-datasets',
+  templateUrl: './view-datasets.component.html',
+  styleUrls: ['./view-datasets.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ViewDatasetsComponent implements OnInit {
-  dataSource : Datafile[] = [];
-  displayedColumns: string[] = [
-    'title',
-    'description',
-    'tags',
-    'dataType',
-    'content',
-    'buttons',
-  ];
+  dataSource: Datafile[] = [];
+  displayedColumns: string[] = ['title', 'description', 'tags', 'dataType', 'content', 'buttons'];
 
   totalCount?: number;
   skip = 0;
@@ -35,7 +28,7 @@ export class ViewDatasetsComponent implements OnInit {
     private apiService: ApiService,
     private notificationService: NotificationService,
     private translate: TranslateService,
-    private downloadService: DownloadService
+    private downloadService: DownloadService,
   ) {}
 
   ngOnInit() {
@@ -68,9 +61,7 @@ export class ViewDatasetsComponent implements OnInit {
 
   delete(id: string) {
     this.apiService.deleteDatafile(id).subscribe(() => {
-      const deleteSuccessMessage = this.translate.instant(
-        'viewAllDatafiles.deleteSuccess'
-      );
+      const deleteSuccessMessage = this.translate.instant('viewAllDatafiles.deleteSuccess');
       this.notificationService.showInfo(deleteSuccessMessage);
       this.loadData();
     });
@@ -84,7 +75,7 @@ export class ViewDatasetsComponent implements OnInit {
 
   onPageChange(event: PageEvent) {
     this.limit = event.pageSize;
-    this.skip = this.limit * event.pageIndex
+    this.skip = this.limit * event.pageIndex;
     this.loadData();
   }
 }

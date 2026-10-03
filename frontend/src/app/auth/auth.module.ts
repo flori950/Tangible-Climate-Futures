@@ -11,6 +11,13 @@ import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [LoginComponent, RegisterComponent, ResetPasswordComponent],
-  imports: [CommonModule, MaterialModule, FormsModule, AuthRoutingModule, SharedModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    MaterialModule,
+    FormsModule,
+    AuthRoutingModule,
+    SharedModule,
+    TranslatePipe,
+  ],
 })
 export class AuthModule {}

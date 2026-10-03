@@ -16,7 +16,7 @@ export class DownloadService {
   constructor(
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private translate: TranslateService
+    private translate: TranslateService,
   ) {}
 
   /**
@@ -28,11 +28,7 @@ export class DownloadService {
   downloadJourney(journey: Journey, excludedIds?: Set<string>) {
     const observableList = journey.collections.map((collection) => {
       //Journey only saves the "receipe" -> get data points based on filters stored in journey
-      return this.apiService.filterDatafiles(
-        { filterSet: collection.filterSet },
-        10_000_000,
-        0
-      );
+      return this.apiService.filterDatafiles({ filterSet: collection.filterSet }, 10_000_000, 0);
     });
 
     forkJoin(observableList)
@@ -43,17 +39,15 @@ export class DownloadService {
             pageinationResult.results.filter((result) =>
               excludedIds != null
                 ? !excludedIds.has(result._id!)
-                : !journey.excludedIDs.includes(result._id!)
-            )
-          )
-        )
+                : !journey.excludedIDs.includes(result._id!),
+            ),
+          ),
+        ),
       )
       .subscribe({
         next: (resultData) => this.downloadAsJSON(resultData, journey.title),
         error: () => {
-          const downloadFailedMessage = this.translate.instant(
-            'browseJourney.downloadFailed'
-          );
+          const downloadFailedMessage = this.translate.instant('browseJourney.downloadFailed');
           this.notificationService.showInfo(downloadFailedMessage);
         },
       });
@@ -71,11 +65,11 @@ export class DownloadService {
           JSON.stringify(
             dataObject,
             null,
-            2 // Adds indentation of 2 spaces
+            2, // Adds indentation of 2 spaces
           ),
         ],
-        { type: 'application/json' }
-      )
+        { type: 'application/json' },
+      ),
     );
     downloadLink.download = name;
     downloadLink.click();

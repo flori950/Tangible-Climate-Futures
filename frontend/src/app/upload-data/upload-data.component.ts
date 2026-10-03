@@ -6,11 +6,11 @@ import { Tile } from '../shared/dashboard-tile/tile';
  * Contains the dashboard tiles for the different uploads.
  */
 @Component({
-    selector: 'app-upload-data',
-    templateUrl: './upload-data.component.html',
-    styleUrls: ['./upload-data.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-upload-data',
+  templateUrl: './upload-data.component.html',
+  styleUrls: ['./upload-data.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class UploadDataComponent implements OnInit {
   rawTiles: Tile[] = [];
@@ -40,13 +40,13 @@ export class UploadDataComponent implements OnInit {
       { title: json, icon: 'cloud_upload', url: 'upload-data/json' },
       { title: csv, icon: 'attach_file', url: 'upload-data/csv' },
       { title: txt, icon: 'text_format', url: 'upload-data/txt' },
-      { title: netCDF, icon: 'code', url: 'upload-data/netcdf' }
+      { title: netCDF, icon: 'code', url: 'upload-data/netcdf' },
     ];
 
     this.supportedTiles = [
       { title: simra, icon: 'directions_bike', url: 'upload-dataset/simra' },
       { title: cerV2, icon: 'developer_board', url: 'upload-dataset/cerv2' },
-      { title: csv, icon: 'attach_file', url: 'upload-dataset/csv' }
+      { title: csv, icon: 'attach_file', url: 'upload-dataset/csv' },
     ];
   }
 }
