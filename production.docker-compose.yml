@@ -1,6 +1,5 @@
 ## Docker Compose file with firewall for internal services
 
-version: "3.8"
 services:
   # Frontend container
   angular-frontend:
@@ -30,6 +29,7 @@ services:
       - PORT=${EXPRESS_BACKEND_PORT}
       - PYTHON_BACKEND_HOST=${PYTHON_BACKEND_HOST}
       - PYTHON_BACKEND_PORT=${PYTHON_BACKEND_PORT}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - MONGODB_URL=${PROD_MONGODB_URL}
     ports:
       - "${EXPRESS_BACKEND_PORT}:${EXPRESS_BACKEND_PORT}"
@@ -40,7 +40,7 @@ services:
       - mongodb
     restart: always
 
-  # Internal servive: Data-science backend container
+  # Internal service: Data-science backend container
   python-backend:
     build:
       context: ./
@@ -53,9 +53,9 @@ services:
       - internal-network
     restart: always
 
-  # Internal servive: Database container
+  # Internal service: Database container
   mongodb:
-    image: mongo:latest
+    image: mongo:8
     container_name: mongodb
     volumes:
       - mongodb_data_container:/data/db

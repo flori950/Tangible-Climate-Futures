@@ -5,7 +5,7 @@ resource "google_compute_instance" "adsp" {
 
   boot_disk {
     initialize_params {
-      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+      image = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
     }
   }
 

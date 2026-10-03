@@ -5,3 +5,13 @@ coverage
 frontend-draft/.angular/cache/
 __pycache__
 deploy/*terraform*
+
+# Local tooling
+.DS_Store
+.venv/
+.angular/
+.pytest_cache/
+.ruff_cache/
+*.tfstate
+*.tfstate.*
+.terraform/

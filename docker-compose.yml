@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   # Frontend container
   angular-frontend:
@@ -20,6 +19,7 @@ services:
       - PORT=${EXPRESS_BACKEND_PORT}
       - PYTHON_BACKEND_HOST=${PYTHON_BACKEND_HOST}
       - PYTHON_BACKEND_PORT=${PYTHON_BACKEND_PORT}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - MONGODB_URL=${MONGODB_URL}
       - DISABLE_SWAGGER_AUTH=${DISABLE_SWAGGER_AUTH}
     ports:
@@ -28,7 +28,7 @@ services:
       - mongodb
     restart: always
 
-    # Data-science backend container
+  # Data-science backend container
   python-backend:
     build:
       context: ./
@@ -43,7 +43,7 @@ services:
 
   # Database container
   mongodb:
-    image: mongo:latest
+    image: mongo:8
     container_name: mongodb
     expose:
       - ${MONGODB_PORT}
