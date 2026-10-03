@@ -1,0 +1,8 @@
+dist
+coverage
+node_modules
+.angular
+package-lock.json
+# 3D city meshes and binary assets
+src/assets/threejs-city-data
+src/favicon.ico
