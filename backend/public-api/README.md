@@ -53,41 +53,43 @@ All routes below are prefixed with `/api` and require `Authorization: Bearer <Fi
 
 ### Datafile (`src/controllers/datafile.controller.ts`)
 
-| Method | Path                                                                     | Purpose                                                                                                                                                                        |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| GET    | `/datafile/limit={limit}&skip={skip}&onlyMetadata={onlyMetadata}`        | Paginated list; `onlyMetadata=true` drops `content.data`                                                                                                                       |
-| GET    | `/datafile/{documentId}`                                                 | One datafile (NetCDF data is re-attached from GridFS)                                                                                                                          |
-| POST   | `/datafile`                                                              | Create a datafile from JSON (`DatafileCreateParams`)                                                                                                                           |
-| PUT    | `/datafile/{documentId}`                                                 | Replace fields of a datafile (`DatafileUpdateParams`)                                                                                                                          |
-| DELETE | `/datafile/{documentId}`                                                 | Delete one datafile                                                                                                                                                            |
-| POST   | `/datafile/deleteMany`                                                   | Delete by `{ documentIDs: string[] }`, returns the deleted documents                                                                                                           |
-| POST   | `/datafile/{documentID}/attach`                                          | multipart: `file` + `fileType` (`JSON`, `CSV`, `TXT`, `NETCDF`); replaces `content.data` of a `NOTREFERENCED` datafile                                                         |
-| POST   | `/datafile/fromFile`                                                     | multipart: `file` + `dataset` (`SIMRA`, `CSV`, `CERV2`) + optional `tags` (comma separated), `description`, `steps` (CERv2 sampling); creates one datafile per row / datapoint |
-| POST   | `/datafile/filter/limit={limit}&skip={skip}&onlyMetadata={onlyMetadata}` | Filter with a `FilterSetParams` body                                                                                                                                           |
-| GET    | `/datafile/nestedValue/{documentId}/{path}`                              | Read a nested value, e.g. `content.data.foo[0]`                                                                                                                                |
-| PUT    | `/datafile/nestedValue/put`                                              | Set `{ IDs, path, value }` on several datafiles (`IDs` comma separated)                                                                                                        |
-| DELETE | `/datafile/nestedValue/delete`                                           | Unset `{ IDs, path }` on several datafiles                                                                                                                                     |
+| Method | Path                                                                     | Purpose                                                                                                                                                                                                                                    |
+| ------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/datafile/limit={limit}&skip={skip}&onlyMetadata={onlyMetadata}`        | Paginated list; `onlyMetadata=true` drops `content.data`                                                                                                                                                                                   |
+| GET    | `/datafile/{documentId}`                                                 | One datafile (NetCDF data is re-attached from GridFS)                                                                                                                                                                                      |
+| POST   | `/datafile`                                                              | Create a datafile from JSON (`DatafileCreateParams`)                                                                                                                                                                                       |
+| PUT    | `/datafile/{documentId}`                                                 | Replace fields of a datafile (`DatafileUpdateParams`)                                                                                                                                                                                      |
+| DELETE | `/datafile/{documentId}`                                                 | Delete one datafile                                                                                                                                                                                                                        |
+| POST   | `/datafile/deleteMany`                                                   | Delete by `{ documentIDs: string[] }`, returns the deleted documents                                                                                                                                                                       |
+| POST   | `/datafile/{documentID}/attach`                                          | multipart: `file` + `fileType` (`JSON`, `CSV`, `TXT`, `NETCDF`); replaces `content.data` of a `NOTREFERENCED` datafile                                                                                                                     |
+| POST   | `/datafile/fromFile`                                                     | multipart: `file` + `dataset` (`SIMRA`, `CSV`, `CERV2`) + optional `tags` (comma separated), `description`, `steps` (CERv2 sampling); creates one datafile per row / datapoint. CERv2 returns the created datafiles without `content.data` |
+| POST   | `/datafile/filter/limit={limit}&skip={skip}&onlyMetadata={onlyMetadata}` | Filter with a `FilterSetParams` body                                                                                                                                                                                                       |
+| GET    | `/datafile/nestedValue/{documentId}/{path}`                              | Read a nested value, e.g. `content.data.foo[0]`                                                                                                                                                                                            |
+| PUT    | `/datafile/nestedValue/put`                                              | Set `{ IDs, path, value }` on several datafiles (`IDs` comma separated). All-or-nothing; only paths below `content`, `title`, `description`, `tags`                                                                                        |
+| DELETE | `/datafile/nestedValue/delete`                                           | Unset `{ IDs, path }` on several datafiles (same rules)                                                                                                                                                                                    |
 
 ### Journey (`src/controllers/journey.controller.ts`)
 
-| Method | Path                                        | Purpose                                       |
-| ------ | ------------------------------------------- | --------------------------------------------- |
-| GET    | `/journey/limit={limit}&skip={skip}`        | Paginated list                                |
-| GET    | `/journey/{journeyId}`                      | One journey                                   |
-| POST   | `/journey`                                  | Create (`JourneyCreateParams`)                |
-| PUT    | `/journey/{journeyId}`                      | Update (`JourneyUpdateParams`)                |
-| DELETE | `/journey/{journeyId}`                      | Delete one journey                            |
-| POST   | `/journey/deleteMany`                       | Delete by `{ documentIDs: string[] }`         |
-| POST   | `/journey/filter/limit={limit}&skip={skip}` | Filter journeys with a `FilterSetParams` body |
+| Method | Path                                        | Purpose                                           |
+| ------ | ------------------------------------------- | ------------------------------------------------- |
+| GET    | `/journey/limit={limit}&skip={skip}`        | Paginated list (public + own journeys)            |
+| GET    | `/journey/{journeyId}`                      | One journey (404 for other users' PRIVATE)        |
+| POST   | `/journey`                                  | Create (`JourneyCreateParams`), owner = user      |
+| PUT    | `/journey/{journeyId}`                      | Update, owner only (403 otherwise)                |
+| DELETE | `/journey/{journeyId}`                      | Delete one journey, owner only                    |
+| POST   | `/journey/deleteMany`                       | Delete by `{ documentIDs: string[] }`, owner only |
+| POST   | `/journey/filter/limit={limit}&skip={skip}` | Filter journeys with a `FilterSetParams` body     |
 
 ### Not authenticated
 
-| Path      | Purpose                             |
-| --------- | ----------------------------------- |
-| `/health` | `{"status":"healthy"}`              |
-| `/docs`   | Swagger UI for `build/swagger.json` |
+| Path      | Purpose                                                                 |
+| --------- | ----------------------------------------------------------------------- |
+| `/health` | Liveness: `{"status":"healthy"}`                                        |
+| `/ready`  | Readiness: 200 `{"status":"ready"}` when MongoDB is connected, else 503 |
+| `/docs`   | Swagger UI for `build/swagger.json`                                     |
 
-Paginated responses have the shape `{ skip, limit, totalCount, results }`.
+Paginated responses have the shape `{ skip, limit, totalCount, results }`. `limit` is capped
+at 1000 and negative `skip` values are treated as 0; the response echoes the values used.
 
 ### Error responses (`src/middlewares/error.middleware.ts`)
 
@@ -96,7 +98,11 @@ Paginated responses have the shape `{ skip, limit, totalCount, results }`.
 | tsoa `ValidateError` (body/path/form validation)                                                           | 422    |
 | `NotFoundError`                                                                                            | 404    |
 | `OperationNotSupportedError`, `WrongObjectTypeError`, `FailedToParseError`, malformed JSON (`SyntaxError`) | 400    |
+| Invalid GeoJSON location (MongoDB error 16755), multer errors other than file size                         | 400    |
 | `UnauthorizedError`                                                                                        | 401    |
+| `ForbiddenError` (journey of another user)                                                                 | 403    |
+| File above `MAX_UPLOAD_SIZE_MB`, body above `JSON_BODY_LIMIT` (`PayloadTooLargeError`)                     | 413    |
+| Other 4xx errors of Express' body parsers (e.g. 415)                                                       | as is  |
 | Mongoose errors and anything else                                                                          | 500    |
 
 ## Data models
@@ -111,15 +117,20 @@ Angular frontend; the Mongoose schemas are in [`src/models`](src/models).
   `location` is GeoJSON `{ type: "Point", coordinates: [lon, lat] }`.
 - **Journey** (`journeys` collection): `title`, `description?`, `tags[]`, `author`,
   `parentID?`, `visibility` (`PUBLIC`/`PRIVATE`), `collections[]` (`{ title, filterSet }`),
-  `excludedIDs[]`, timestamps.
+  `excludedIDs[]`, timestamps, plus the internal `ownerUID` (Firebase UID of the creator,
+  `select: false`, never returned and not accepted from clients).
 - **Filters** (`FilterSetParams = { filterSet: AnyFilter[] }`): each filter is
   `{ key, operation, value, negate }` with `CONTAINS`/`MATCHES` (strings, `_id` is
-  converted to an ObjectId), `EQ`/`GT`/`GTE`/`LT`/`LTE` (numbers), `IS` (booleans),
+  converted to an ObjectId; `CONTAINS` is a literal, case-insensitive substring search, max.
+  200 characters), `EQ`/`GT`/`GTE`/`LT`/`LTE` (numbers), `IS` (booleans),
   `RADIUS` (`{ center: [lon, lat], radius }` in km) and `AREA` (`{ vertices }` polygon), or a
   `{ booleanOperation: "AND" | "OR", filters }` concatenation. Every entry becomes one
   `$match` stage of an aggregation pipeline (entries are AND-ed).
 - **GridFS bucket `netcdf`**: converted NetCDF payloads are stored as
   `<datafileId>.netcdf.json`; the datafile only keeps `content.data.dataObject.dataId`.
+  The file is removed when the datafile is deleted or another file type is attached.
+- **Indexes**: `datafiles.uploadID`, a `2dsphere` index on `content.location` (used by
+  `RADIUS`/`AREA`; locations must be valid `[lon, lat]`), `journeys.ownerUID`.
 
 ## Configuration
 
@@ -135,6 +146,9 @@ the repository-root `.env`; nothing is read from `.env` directly when running `n
 | `PYTHON_BACKEND_HOST`  | `localhost`                           | Host of the data-science service                                                           |
 | `PYTHON_BACKEND_PORT`  | `50000`                               | Port of the data-science service                                                           |
 | `FIREBASE_PROJECT_ID`  | unset                                 | Firebase project whose ID tokens are accepted (falls back to `GOOGLE_CLOUD_PROJECT` / ADC) |
+| `CORS_ORIGINS`         | `*`                                   | Allowed origins, comma separated (e.g. `https://tcf.example.org,http://localhost:4200`)    |
+| `MAX_UPLOAD_SIZE_MB`   | `512`                                 | Maximum size of one uploaded file (uploads are kept in memory)                             |
+| `JSON_BODY_LIMIT`      | `100kb`                               | Maximum JSON / urlencoded body size (Express syntax)                                       |
 | `NODE_ENV`             | unset                                 | `test` silences request logging                                                            |
 
 ## Authentication
@@ -149,6 +163,15 @@ Every controller is decorated with `@Security("firebase")`. tsoa calls
 
 firebase-admin is initialised lazily on the first authenticated request with
 `{ projectId: FIREBASE_PROJECT_ID }`. Verifying ID tokens does not need a service account.
+
+### Authorisation
+
+- **Journeys** belong to the user who created them (`ownerUID`). Other users only see
+  `PUBLIC` journeys and cannot change or delete them (403); they can still create their own copy
+  (`parentID`). Journeys without an owner (created earlier or with authentication disabled)
+  remain open to everyone. With `DISABLE_SWAGGER_AUTH=true` no ownership rules apply.
+- **Datafiles** are a shared data pool: every authenticated user can read and change all of
+  them.
 
 ## Data-science service (NetCDF)
 
@@ -166,8 +189,8 @@ Any failure is reported as `FailedToParseError` (`400`).
 ## Testing
 
 ```bash
-npm test                # 27 suites / 136 tests
-npm run test:coverage   # ~91 % statements, ~79 % branches
+npm test                # 31 suites / 182 tests
+npm run test:coverage   # ~92 % statements, ~81 % branches
 npm run typecheck       # type errors in tests are not reported by ts-jest (isolatedModules)
 ```
 
@@ -193,7 +216,9 @@ docker run -p 8080:8080 -e MONGODB_URL=mongodb://host.docker.internal:27017/data
 Two stages on `node:24-slim`: the builder runs `npm ci` + `npm run build`, the runtime
 stage installs production dependencies only and runs
 `node dist/backend/public-api/src/index.js` as the `node` user (`PORT` defaults to 8080 in
-the image; docker compose overrides it).
+the image; docker compose overrides it). `SIGTERM`/`SIGINT` stop the server gracefully (open
+requests finish, MongoDB is disconnected, forced exit after 10 s). Use `/ready` as readiness
+and `/health` as liveness probe.
 
 ## Build layout
 
@@ -204,18 +229,16 @@ The compiled entry point therefore is `dist/backend/public-api/src/index.js`;
 
 ## Security notes
 
-- `DISABLE_SWAGGER_AUTH=true` switches off authentication for the whole API. Before this
-  modernisation an unset variable also meant "disabled"; now only an explicit `true` does
-  (the root `.env` sets `false`). Never enable it in production.
-- There is no authorisation layer: every valid Firebase user can read, change and delete all
-  datafiles and journeys (also `PRIVATE` journeys and other authors' journeys).
-- CORS allows every origin (`origin: "*"`).
-- Uploads are buffered completely in memory by multer without a size limit, and the JSON body
-  limit is Express' default (100 kB). Large NetCDF/SimRa uploads can exhaust memory; the server
-  starts with `--max-old-space-size=4096`.
-- `CONTAINS` filters pass the user value to MongoDB as a regular expression
-  (`$regex`, case-insensitive) without escaping, so expensive patterns are possible.
-- The nested-value endpoints let clients `$set`/`$unset` arbitrary paths of a datafile.
+- `DISABLE_SWAGGER_AUTH=true` switches off authentication (and the journey ownership rules)
+  for the whole API. Before this modernisation an unset variable also meant "disabled"; now
+  only an explicit `true` does (the root `.env` sets `false`). Never enable it in production.
+  The name was kept because docker compose and `.env` use it.
+- Datafiles have no owner: every authenticated user can change and delete all of them.
+- `CORS_ORIGINS` defaults to `*`; set it to the frontend's origin in production.
+- Uploads are buffered in memory (multer), limited by `MAX_UPLOAD_SIZE_MB` (default 512 MB);
+  the server starts with `--max-old-space-size=4096`.
+- The nested-value endpoints can only change `content`, `title`, `description` and `tags`
+  (no `_id`, `dataType`, `dataSet`, `uploadID`, timestamps, no `$` operators).
 
 ## Known issues
 
@@ -234,8 +257,14 @@ The compiled entry point therefore is `dist/backend/public-api/src/index.js`;
 - **MongoDB driver inside Jest**: the driver loads `os` with a dynamic `import()`, which Jest's
   CommonJS runtime cannot execute; the tests therefore pass `runtimeAdapters: { os }` to
   `mongoose.connect` (see `__test__/utils/database.ts`).
-- **CERv2 uploads** (`/fromFile` with `CERV2`) create the datafiles but respond with an empty
-  array, because the datapoints are streamed into the database one by one.
+- **Not changed on purpose (would break the frontend):** pagination is part of the path
+  (`limit=…&skip=…`) instead of query parameters, `deleteMany` uses `POST`, nested-value delete
+  sends a body with `DELETE`, and `GET nestedValue/{id}/{path}` cannot contain `/` in the path.
+  Changing these needs a coordinated frontend release.
+- **Legacy data**: datafiles with invalid coordinates prevent the `2dsphere` index from being
+  built on an existing database (Mongoose logs the index error; filters still work, without
+  index). Journeys created before the ownership rules have no owner and stay open.
+- **Logging** is plain `console`/morgan output; there is no structured logging or request ID yet.
 - `npm audit` still reports advisories for `nodemon` (dev only, via chokidar/braces) and
   `@tsoa/cli` (see above); they need breaking upgrades upstream.
 

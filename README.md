@@ -18,7 +18,7 @@ Browser ──► frontend (Angular 22, :8080) ──► public-api (Express 5 +
 | Part | Path | Stack | Tests | README |
 |---|---|---|---|---|
 | Frontend | `frontend/` | Angular 22, Angular Material, OpenLayers 10, three.js, ngx-translate, AngularFire | Vitest (jsdom), 156 tests | `frontend/README.md` |
-| Public API | `backend/public-api/` | Node 24, Express 5, tsoa 6.6 (OpenAPI + routes), Mongoose 9, firebase-admin 14, multer 2 | Jest 30 + in-memory MongoDB, 136 tests | `backend/public-api/README.md` |
+| Public API | `backend/public-api/` | Node 24, Express 5, tsoa 6.6 (OpenAPI + routes), Mongoose 9, firebase-admin 14, multer 2 | Jest 30 + in-memory MongoDB, 182 tests | `backend/public-api/README.md` |
 | Data-science service | `backend/data-science/` | Python 3.13, Flask 3.1, flask-restx, netCDF4, numpy 2, gunicorn | pytest, 68 tests, 99 % branch coverage | `backend/data-science/README.md` |
 | Shared types | `common/types/` | TypeScript types used by frontend and API | (covered by both) | `common/README.md` |
 | Helper scripts | `scripts/` | Mongo seed/cleanup, evaluation | | `scripts/README.md` |
@@ -41,6 +41,8 @@ All ports and hosts live in the root `.env`, which Docker Compose reads:
 | `STAGE` | public API | `development` / `production` |
 | `DISABLE_SWAGGER_AUTH` | public API | `true` disables token checks for the **whole API** (for local Swagger use only) |
 | `FIREBASE_PROJECT_ID` | public API | Firebase project whose ID tokens are accepted |
+| `CORS_ORIGINS` | public API | allowed origins, comma separated; `*` = all |
+| `MAX_UPLOAD_SIZE_MB` | public API | upload limit, default 512 (larger uploads get 413) |
 | `ANGULAR_FRONTEND_PORT` | frontend | default 8080 |
 | `EXPRESS_BACKEND_HOST` / `_PORT` | public API | default `localhost:40000` |
 | `PYTHON_BACKEND_HOST` / `_PORT` | public API → data-science | default `localhost:50000` |
@@ -111,5 +113,5 @@ Each part lists its own known issues in its README. The most important ones:
 
 - **AngularFire on Angular 22** only installs through npm `overrides`, and Firebase stays on 11.x until AngularFire supports Angular 22.
 - **Node ≥ 25:** firebase-admin crashes on import, so the API rejects every authenticated request. Use Node 24.
-- **No authorisation model:** any signed-in user can change any datafile and any journey, including private ones. CORS allows all origins, uploads have no size limit, and `CONTAINS` filters use user input as an unescaped regular expression.
+- **Authorisation is partial:** journeys belong to their creator (private journeys are hidden from others, foreign journeys cannot be changed), but datafiles are a shared pool any signed-in user can edit. Journeys created before October 2026 have no owner and stay open.
 - **Docker images and Terraform** were updated but not built or applied in this environment (no Docker, no Terraform installed); CI builds the images.

@@ -1,8 +1,20 @@
 # src/middlewares
 
-| File                  | Purpose                                                                                                                                                                                                                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `error.middleware.ts` | Express error handler, registered last in `app.ts`. Maps tsoa `ValidateError` (422), the classes from `src/errors` (400/401/404), Mongoose errors (500), `SyntaxError` from malformed JSON bodies (400), any other `Error` (500) and non-`Error` throwables (500) to JSON responses `{ message, details? }`. |
+| File                  | Purpose                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `error.middleware.ts` | Express error handler, registered last in `app.ts`. Maps errors to JSON responses `{ message, details? }`. |
+
+| Error                                                                                                      | Status      |
+| ---------------------------------------------------------------------------------------------------------- | ----------- |
+| tsoa `ValidateError`                                                                                       | 422         |
+| `NotFoundError`                                                                                            | 404         |
+| `OperationNotSupportedError`, `WrongObjectTypeError`, `FailedToParseError`, `SyntaxError` (malformed JSON) | 400         |
+| Multer errors other than file size, invalid GeoJSON (MongoDB code 16755)                                   | 400         |
+| `UnauthorizedError`                                                                                        | 401         |
+| `ForbiddenError`                                                                                           | 403         |
+| `PayloadTooLargeError`, multer `LIMIT_FILE_SIZE`                                                           | 413         |
+| 4xx `http-errors` of Express' body parsers (e.g. body too large 413, wrong charset 415)                    | status kept |
+| Mongoose errors, any other `Error`, non-`Error` throwables                                                 | 500         |
 
 ## Gotchas
 

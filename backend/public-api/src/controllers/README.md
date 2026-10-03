@@ -24,5 +24,7 @@ Both classes are decorated with `@Security("firebase")`, so every endpoint goes 
 - File uploads use `@UploadedFile()` + `@FormField()`; the generated routes handle them with
   multer (memory storage, no size limit).
 - Controllers are instantiated per request by the generated routes. Do not keep state in them.
+- `JourneyController` injects the Express request (`@Request()`, not part of the spec) and
+  creates `JourneyService` with the user's UID, which enforces the ownership rules.
 - After changing a controller run `npm run build` (or `npx tsoa spec-and-routes`) to regenerate
   routes and spec.

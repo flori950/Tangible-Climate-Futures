@@ -6,15 +6,16 @@ MongoDB document (16 MB limit), currently the converted NetCDF data.
 | File                      | Purpose                                                                                                                                                                                                               |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `bucket.service.ts`       | Abstract `BucketService`: `uploadFile(name, value, contentType?)` stores `JSON.stringify(value)` and first deletes files with the same name; `downloadFile(name)` returns the parsed JSON; `deleteFilesByName(name)`. |
-| `netcdfBucket.service.ts` | `NetCDFJsonBucketService`: bucket `netcdf`, file names `<datafileId>.netcdf.json`, content type stored in the file metadata.                                                                                          |
+| `netcdfBucket.service.ts` | `NetCDFJsonBucketService`: bucket `netcdf`, file names `<datafileId>.netcdf.json`, content type stored in the file metadata; `deleteFile(datafileId)` removes the file of a datafile.                                 |
 
 Used by `services/datafile/datafile.service.ts` (`attachFile` with `NETCDF`, `get`,
-`getAllExtended`).
+`getAllExtended`, `delete`, `deleteMany`).
 
 ## Gotchas
 
 - The `GridFSBucket` is created lazily from `mongoose.connection.db`; calling the service without
   an open connection throws.
-- Files live in the collections `netcdf.files` / `netcdf.chunks`. Deleting a datafile does
-  **not** delete its GridFS file.
+- Files live in the collections `netcdf.files` / `netcdf.chunks`. `DatafileService` deletes the
+  file together with its datafile and when other data is attached. Files orphaned by older
+  versions stay until they are cleaned up manually.
 - The whole file is buffered in memory on upload and download.

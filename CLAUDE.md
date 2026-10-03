@@ -37,4 +37,4 @@ Root shortcuts: `npm test`, `npm run test:frontend|test:backend|test:python`, `n
 
 ## Known gaps worth knowing before feature work
 
-No authorisation model (any signed-in user can edit everything), open CORS, no upload size limit, unescaped regex in `CONTAINS` filters, AngularFire only via npm `overrides`, CERV2 uploads respond with `[]`, Python service loads selected variables fully into memory. Details in the part READMEs under "Known issues".
+Datafiles are a shared pool without owner checks (journeys have owners since 10/2026), CORS defaults to `*`, AngularFire only via npm `overrides`, breaking API cleanups (query-string pagination, DELETE with body) still pending, Python service loads selected variables fully into memory. Details in the part READMEs under "Known issues".
