@@ -1,0 +1,3 @@
+# Third-party packages used by scripts/mongo (scripts/evaluation uses only the stdlib).
+pymongo==4.18.2
+faker==40.40.0

@@ -1,7 +1,9 @@
 import random
+
 from pymongo import MongoClient
 
 COLLECTION_NAME = "datafiles"
+DEFAULT_DATABASE = "datastore"
 
 
 def generate_coordinates():
@@ -12,7 +14,13 @@ def generate_coordinates():
 
 
 def connect_mongo(mongoDB_url: str):
-    """Connect to mongo and return collection"""
+    """Connect to mongo and return collection.
+
+    The database is taken from the URL path (``mongodb://host:27017/<db>``);
+    query options such as ``?authSource=admin`` are ignored for the name, and
+    ``datastore`` is used when the URL has no database.
+    Close the client with ``collection.database.client.close()`` when done.
+    """
     client = MongoClient(mongoDB_url)
-    db = client[mongoDB_url.split("/")[3]]
+    db = client.get_default_database(DEFAULT_DATABASE)
     return db[COLLECTION_NAME]

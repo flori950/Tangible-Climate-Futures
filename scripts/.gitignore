@@ -1,0 +1,3 @@
+# Local virtualenv for the helper scripts
+.venv/
+__pycache__/

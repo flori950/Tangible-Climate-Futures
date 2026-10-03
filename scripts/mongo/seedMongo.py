@@ -41,3 +41,5 @@ def seed_mongo(mongoDB_url: str, num_documents: int):
         print(f"Data seeding completed. Added {num_documents} random documents.")
     except Exception as e:
         print(f"Error inserting document: {e}")
+    finally:
+        collection.database.client.close()
