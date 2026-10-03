@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Execute Docker Compose
-        run: docker-compose up -d
+        run: docker compose up -d --build --wait
 
       - name: Run Health Check public API
         run: ./.github/scripts/health_check.sh
@@ -33,4 +33,4 @@ jobs:
           ROUTE: http://localhost:50000/health
 
       - name: Stop and clean up services
-        run: docker-compose down
+        run: docker compose down -v

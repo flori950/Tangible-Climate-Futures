@@ -1,4 +1,4 @@
-name: Backend-CI
+name: Frontend-CI
 
 on:
   push:
@@ -8,15 +8,15 @@ on:
     branches:
       - main
     paths:
-      - "backend/public-api/**"
+      - "frontend/**"
       - "common/**"
 
 jobs:
-  PublicApi:
+  Frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend/public-api
+        working-directory: frontend
 
     steps:
       - name: Checkout code
@@ -27,22 +27,19 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: backend/public-api/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Format check
-        run: npm run format
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck (incl. tests)
-        run: npm run typecheck
+      - name: Unit tests (Vitest, jsdom)
+        run: npm run test:ci
 
-      - name: Tests
-        run: npm test
+      - name: Production build
+        run: npm run build
