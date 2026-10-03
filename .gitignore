@@ -5,6 +5,7 @@ coverage
 frontend-draft/.angular/cache/
 __pycache__
 deploy/*terraform*
+!deploy/.terraform.lock.hcl
 
 # Local tooling
 .DS_Store

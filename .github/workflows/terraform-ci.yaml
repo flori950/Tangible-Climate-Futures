@@ -1,0 +1,51 @@
+name: Terraform-CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "deploy/**"
+
+jobs:
+  Terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.16"
+
+      - name: Format check
+        run: terraform fmt -recursive -check -diff
+
+      - name: Init (no backend, no credentials)
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate -no-color
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: v0.64.0
+
+      - name: TFLint
+        run: |
+          tflint --init
+          tflint --format compact
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Plan tests with mocked providers
+        run: terraform test -no-color

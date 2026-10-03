@@ -15,7 +15,7 @@ Florian Jäger's fork of the TU Berlin ADSP SS23 team project *Tangible Climate 
 | `backend/data-science/` | Flask 3 NetCDF/CERV2 → JSON service, pytest + ruff | `.venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/python -m pytest` |
 | `common/types/` | Types shared by frontend (`@common/types`) and API (relative import, also feeds tsoa/Swagger) | build + tests of **both** frontend and API |
 | `scripts/` | Mongo seed/cleanup, evaluation | `--help` runs |
-| `deploy/` | Terraform, GCE VM | not runnable here (no Terraform installed) |
+| `deploy/` | Terraform, GCE VM; `terraform test` with mocked providers | `terraform fmt -recursive -check && terraform validate && tflint && terraform test` (Terraform not installed on the Mac; CI runs it) |
 | `.github/workflows/` | one CI workflow per part + Docker Compose health check | keep `.github/README.md` table in sync |
 
 Root shortcuts: `npm test`, `npm run test:frontend|test:backend|test:python`, `npm run lint`, `npm run setup`.
@@ -24,7 +24,7 @@ Root shortcuts: `npm test`, `npm run test:frontend|test:backend|test:python`, `n
 
 - Use **Node 24** for the public API (firebase-admin breaks on Node ≥ 25). Frontend tests and builds also work on Node 26.
 - Python venv lives in `backend/data-science/.venv` (created by `npm run setup:python`); pipenv is optional.
-- No Docker and no Terraform on Florian's Mac: Dockerfiles, compose files and Terraform can only be checked by CI.
+- No Docker and no Terraform on Florian's Mac: Dockerfiles, compose files and Terraform are checked by CI (`docker-compose-tests.yaml`, `terraform-ci.yaml`). For local Terraform runs, download the binary into a temp folder instead of installing it.
 - The root `.env` is committed with **placeholders** for production values. Never put real credentials into it.
 
 ## Conventions

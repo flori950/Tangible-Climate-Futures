@@ -13,7 +13,7 @@ terraform {
 }
 
 provider "google" {
-  project = "adsp-387109"
-  region  = "europe-west3"
-  zone    = "europe-west3-c"
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
 }

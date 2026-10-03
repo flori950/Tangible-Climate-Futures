@@ -7,6 +7,6 @@ resource "google_compute_firewall" "allow-http" {
     ports    = ["80"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = var.allowed_http_source_ranges
   target_tags   = ["http-server"]
 }
