@@ -196,7 +196,9 @@
     "chooseLabel": "Datei auswählen",
     "dropAreaLabel": "Datei hier ablegen",
     "cancelButtonLabel": "Abbrechen",
-    "uploadButtonLabel": "Hochladen"
+    "uploadButtonLabel": "Hochladen",
+    "removeFile": "Datei entfernen",
+    "invalidFileType": "ungültiger Dateityp"
   },
   "txt": {
     "headerUpload": "Text-Datei Upload"

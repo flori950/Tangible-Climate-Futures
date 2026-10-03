@@ -1,17 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Tile } from '../shared/dashboard-tile/tile';
 
 /**
  * Contains the dashboard tiles for the different uploads.
  */
 @Component({
-  selector: 'app-upload-data',
-  templateUrl: './upload-data.component.html',
-  styleUrls: ['./upload-data.component.scss']
+    selector: 'app-upload-data',
+    templateUrl: './upload-data.component.html',
+    styleUrls: ['./upload-data.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class UploadDataComponent implements OnInit {
-  rawTiles: any[] = [];
-  supportedTiles: any[] = [];
+  rawTiles: Tile[] = [];
+  supportedTiles: Tile[] = [];
 
   constructor(private translate: TranslateService) {}
 
@@ -33,7 +36,7 @@ export class UploadDataComponent implements OnInit {
     const cerV2 = this.translate.instant('title.cerv2');
 
     this.rawTiles = [
-      { title: noFile, icon: 'create_new_folde', url: 'upload-data/no-file' },
+      { title: noFile, icon: 'create_new_folder', url: 'upload-data/no-file' },
       { title: json, icon: 'cloud_upload', url: 'upload-data/json' },
       { title: csv, icon: 'attach_file', url: 'upload-data/csv' },
       { title: txt, icon: 'text_format', url: 'upload-data/txt' },

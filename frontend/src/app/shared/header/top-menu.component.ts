@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
@@ -11,19 +11,21 @@ import { CoordinateService } from '../service/coordinate.service';
  * These are: Button to return to start page, page title, user info and log out, language change.
  */
 @Component({
-  selector: 'top-menu',
-  templateUrl: './top-menu.component.html',
-  styleUrls: ['./top-menu.scss'],
+    selector: 'app-top-menu',
+    templateUrl: './top-menu.component.html',
+    styleUrls: ['./top-menu.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TopMenuComponent implements OnInit {
   @Output() languageChanged = new EventEmitter<string>();
 
   coordinate: [number, number] | undefined;
-  loggedInUser: string = '';
+  loggedInUser = '';
   supportedLanguages = ['de', 'en'];
   currentLanguage: string;
-  showHomeButton: boolean = false;
-  isFirstLoad: boolean = true;
+  showHomeButton = false;
+  isFirstLoad = true;
 
   user$: Observable<User | null>;
 
@@ -33,7 +35,7 @@ export class TopMenuComponent implements OnInit {
     private router: Router,
     private auth: AuthService
   ) {
-    this.translate.setDefaultLang('de');
+    this.translate.setFallbackLang('de');
     this.user$ = auth.user$;
     this.currentLanguage = localStorage.getItem('language') || 'de';
     this.translate.use(this.currentLanguage);

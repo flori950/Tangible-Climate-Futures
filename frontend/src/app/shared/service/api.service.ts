@@ -13,6 +13,9 @@ import { environment } from '../../../environments/environment';
 
 const { expressBackendHost, expressBackendPort } = environment;
 
+/** Base URL of the public-api backend (configured in src/environments). */
+export const BACKEND_API_URL = `http://${expressBackendHost}:${expressBackendPort}/api`;
+
 /**
  * Service, which contains all API calls to the backend.
  * Refer to the swagger documentation for the detailed description of all endpoints.
@@ -22,7 +25,7 @@ const { expressBackendHost, expressBackendPort } = environment;
 })
 export class ApiService {
   //customizable on deployment
-  private backendUrl = `http://${expressBackendHost}:${expressBackendPort}/api`;
+  private backendUrl = BACKEND_API_URL;
 
   constructor(private http: HttpClient) {}
 

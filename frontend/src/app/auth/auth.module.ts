@@ -6,24 +6,11 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { MaterialModule } from '../material.module';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 
-
-
 @NgModule({
-  declarations: [
-    LoginComponent,
-    RegisterComponent,
-    ResetPasswordComponent
-  ],
-  imports: [
-    CommonModule,
-    MaterialModule,
-    FormsModule,
-    AuthRoutingModule,
-    SharedModule,
-    TranslateModule.forChild()
-  ]
+  declarations: [LoginComponent, RegisterComponent, ResetPasswordComponent],
+  imports: [CommonModule, MaterialModule, FormsModule, AuthRoutingModule, SharedModule, TranslatePipe],
 })
-export class AuthModule { }
+export class AuthModule {}

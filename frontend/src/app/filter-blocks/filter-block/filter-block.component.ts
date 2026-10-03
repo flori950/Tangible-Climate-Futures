@@ -1,4 +1,16 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, Validators } from '@angular/forms';
 import {
   AnyFilter,
@@ -23,27 +35,56 @@ import { EditMapFilterDialogComponent } from '../edit-map-filter-dialog/edit-map
 import { DropdownOption } from '../filter-blocks.component';
 
 @Component({
-  selector: 'app-filter-block',
-  templateUrl: './filter-block.component.html',
-  styleUrls: ['./filter-block.component.scss'],
+    selector: 'app-filter-block',
+    templateUrl: './filter-block.component.html',
+    styleUrls: ['./filter-block.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 
-export class FilterBlockComponent {
+export class FilterBlockComponent implements OnInit, OnChanges {
   @Input({ required: true }) filter!: Filter;
   @Output() onChange = new EventEmitter();
 
   @Input() dropdownOptions?: DropdownOption[];
 
-  keyControl = new FormControl('', [
-    Validators.required,
-  ]);
-  valueControl = new FormControl('', [
-    Validators.required,
-  ]);
+  /** Text input for the key (used when no dropdownOptions are given). */
+  keyControl = new FormControl('', [Validators.required]);
+  /** Text/number input for string and number filters. */
+  valueControl = new FormControl<string | number | null>('', [Validators.required]);
+
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private dialog: MatDialog) {}
 
   filterOperations = Object.keys(FilterOperations);
+
+  ngOnInit() {
+    // The form controls are the source of truth for the inputs; changes are
+    // written back into the (mutable) filter object of the parent.
+    this.keyControl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((key) => (this.filter.key = key ?? ''));
+    this.valueControl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => {
+        if (isNumberFilter(this.filter)) this.filter.value = Number(value);
+        else if (isStringFilter(this.filter)) this.filter.value = String(value ?? '');
+      });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['filter'] && this.filter) {
+      this.keyControl.setValue(this.filter.key, { emitEvent: false });
+      this.syncValueControl();
+    }
+  }
+
+  private syncValueControl() {
+    if (isStringFilter(this.filter) || isNumberFilter(this.filter)) {
+      this.valueControl.setValue(this.filter.value as string | number, { emitEvent: false });
+    }
+  }
 
   onOperationSelectionChange(operationKey: keyof FilterOperations) {
     this.filter.operation = (FilterOperations as any)[operationKey];
@@ -59,6 +100,7 @@ export class FilterBlockComponent {
     if (isStringFilter(this.filter)) this.filter.value = '';
     if (isNumberFilter(this.filter)) this.filter.value = 0;
     if (isBooleanFilter(this.filter)) this.filter.value = true;
+    this.syncValueControl();
 
     this.onChange.emit();
   }

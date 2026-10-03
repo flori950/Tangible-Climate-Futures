@@ -1,17 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Tile } from '../shared/dashboard-tile/tile';
 
 /**
  * This component is the start page of the application and offers the user
  * different tiles, i.e., links to different components.
  */
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DashboardComponent implements OnInit {
-  tiles: any[] = [];
+  tiles: Tile[] = [];
 
   constructor(private translate: TranslateService) {}
 

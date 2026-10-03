@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import {
   DataType,
   MediaType,
@@ -6,13 +6,15 @@ import {
   RefDataFile,
 } from '@common/types';
 
-import { Observable, delay, map, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ApiService } from '../service/api.service';
 
 @Component({
-  selector: 'app-data-display',
-  templateUrl: './data-display.component.html',
-  styleUrls: ['./data-display.component.scss'],
+    selector: 'app-data-display',
+    templateUrl: './data-display.component.html',
+    styleUrls: ['./data-display.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DataDisplayComponent implements OnChanges {
   @Input({ required: true })
@@ -52,11 +54,14 @@ export class DataDisplayComponent implements OnChanges {
 
   getYoutubeVideoID(url: string): string | undefined {
     if (url.includes('youtube.com')) {
-      const fromIndex = url.indexOf('=') + 1;
-      const toIndex = url.indexOf('&');
-      return url.substring(fromIndex, toIndex);
+      // e.g. https://www.youtube.com/watch?v=<id>&t=42
+      const fromIndex = url.indexOf('v=') + 2;
+      const toIndex = url.indexOf('&', fromIndex);
+      return url.substring(fromIndex, toIndex === -1 ? undefined : toIndex);
     }
+    // e.g. https://youtu.be/<id>?t=42
     const fromIndex = url.lastIndexOf('/') + 1;
-    return url.substring(fromIndex);
+    const toIndex = url.indexOf('?', fromIndex);
+    return url.substring(fromIndex, toIndex === -1 ? undefined : toIndex);
   }
 }

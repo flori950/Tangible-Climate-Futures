@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { Collection, Datafile, PaginationResult } from '@common/types';
@@ -7,9 +7,11 @@ import { InputDialogComponent } from '../../shared/input-dialog/input-dialog.com
 import { JourneyService } from '../services/journey.service';
 
 @Component({
-  selector: 'app-collection',
-  templateUrl: './collection.component.html',
-  styleUrls: ['./collection.component.scss'],
+    selector: 'app-collection',
+    templateUrl: './collection.component.html',
+    styleUrls: ['./collection.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CollectionComponent implements OnChanges {
   @Input({ required: true }) collection!: Collection;

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AreaFilter, Collection, Journey, RadiusFilter } from '@common/types';
@@ -17,12 +17,14 @@ import { ThreeJSComponent } from './threejs-view/threejs-view.component';
 export type ViewType = 'default' | 'no-map';
 
 @Component({
-  selector: 'app-journey',
-  templateUrl: './journey.component.html',
-  styleUrls: ['./journey.component.scss'],
-  providers: [JourneyService],
+    selector: 'app-journey',
+    templateUrl: './journey.component.html',
+    styleUrls: ['./journey.component.scss'],
+    providers: [JourneyService],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class JourneyComponent {
+export class JourneyComponent implements OnInit {
   journey$?: Observable<Journey | null>;
   collectionsData$?: Observable<Observable<CollectionData>[]>;
   selectedCollection$?: Observable<Collection | null>;

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { DataType, RefDataFile } from '../../../../../common/types/datafile';
 import { CollectionData } from '../services/journey.service';
 import { Observable, combineLatest, map } from 'rxjs';
@@ -12,9 +12,11 @@ interface ResultCollection {
  * This Gallery-View displays all the referenced (i.e., multimedia data) within the collections
  */
 @Component({
-  selector: 'app-gallery-view',
-  templateUrl: './gallery-view.component.html',
-  styleUrls: ['./gallery-view.component.scss'],
+    selector: 'app-gallery-view',
+    templateUrl: './gallery-view.component.html',
+    styleUrls: ['./gallery-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GalleryViewComponent {
   @Input({ required: true }) set collectionsData(
@@ -43,6 +45,4 @@ export class GalleryViewComponent {
 
   //preset width of each entry
   width = 300;
-
-  constructor() {}
 }

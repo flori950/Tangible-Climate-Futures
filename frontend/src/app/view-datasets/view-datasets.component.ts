@@ -1,8 +1,7 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Datafile, FilterSet } from '@common/types';
 import { TranslateService } from '@ngx-translate/core';
-import { iif } from 'rxjs';
 import { DownloadService } from '../download.service';
 import { NotificationService } from '../notification.service';
 import { ApiService } from '../shared/service/api.service';
@@ -11,11 +10,13 @@ import { ApiService } from '../shared/service/api.service';
  * Allows to browse, filter, update, and delete data points
  */
 @Component({
-  selector: 'app-view-datasets',
-  templateUrl: './view-datasets.component.html',
-  styleUrls: ['./view-datasets.component.scss'],
+    selector: 'app-view-datasets',
+    templateUrl: './view-datasets.component.html',
+    styleUrls: ['./view-datasets.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class ViewDatasetsComponent implements AfterViewInit {
+export class ViewDatasetsComponent implements OnInit {
   dataSource : Datafile[] = [];
   displayedColumns: string[] = [
     'title',
@@ -37,7 +38,7 @@ export class ViewDatasetsComponent implements AfterViewInit {
     private downloadService: DownloadService
   ) {}
 
-  ngAfterViewInit() {
+  ngOnInit() {
     this.loadData();
   }
 
@@ -46,7 +47,11 @@ export class ViewDatasetsComponent implements AfterViewInit {
    * @param filter the currently applied filters
    */
   loadData(filter?: FilterSet) {
-   iif(() => filter != null, this.apiService.filterDatafiles(filter!,this.limit, this.skip, true), this.apiService.getDatafiles(this.limit, this.skip, true)).subscribe((result) => {
+    const request$ =
+      filter != null
+        ? this.apiService.filterDatafiles(filter, this.limit, this.skip, true)
+        : this.apiService.getDatafiles(this.limit, this.skip, true);
+    request$.subscribe((result) => {
       this.dataSource = result.results;
       this.totalCount = result.totalCount;
     });
@@ -67,7 +72,6 @@ export class ViewDatasetsComponent implements AfterViewInit {
         'viewAllDatafiles.deleteSuccess'
       );
       this.notificationService.showInfo(deleteSuccessMessage);
-      this.notificationService.showInfo("Datafile deleted");
       this.loadData();
     });
   }

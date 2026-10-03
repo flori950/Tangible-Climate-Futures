@@ -8,13 +8,13 @@ import {
 } from '@common/types';
 
 export function isFilter(filter: AnyFilter): filter is Filter {
-  return filter.hasOwnProperty('key');
+  return Object.prototype.hasOwnProperty.call(filter, 'key');
 }
 
 export function isConcatenationFilter(
   filter: AnyFilter
 ): filter is ConcatenationFilter {
-  return filter.hasOwnProperty('booleanOperation');
+  return Object.prototype.hasOwnProperty.call(filter, 'booleanOperation');
 }
 
 export function isAreaFilter(filter: AnyFilter): filter is AreaFilter {

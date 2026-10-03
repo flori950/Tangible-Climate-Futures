@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material/chips';
 import {
   AnyFilter,
@@ -23,9 +23,11 @@ export interface DropdownOption  {
 }
 
 @Component({
-  selector: 'app-filter-blocks',
-  templateUrl: './filter-blocks.component.html',
-  styleUrls: ['./filter-blocks.component.scss'],
+    selector: 'app-filter-blocks',
+    templateUrl: './filter-blocks.component.html',
+    styleUrls: ['./filter-blocks.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FilterBlocksComponent {
   @Input() set filterSet(value: AnyFilter[]) {
@@ -111,14 +113,14 @@ export class FilterBlocksComponent {
   }
 
   addTag(event: MatChipInputEvent) {
-    let tag = (event.value || '').trim();
+    const tag = (event.value || '').trim();
     this.addFilter(tag);
     event.chipInput!.clear();
   }
 
   removeTag(tag: string) {
     const filterSet = this.filterSetSubject.value;
-    filterSet.forEach((filter, i) => {
+    filterSet.forEach((filter) => {
       if (
         !isConcatenationFilter(filter) &&
         filter.key == 'tags' &&

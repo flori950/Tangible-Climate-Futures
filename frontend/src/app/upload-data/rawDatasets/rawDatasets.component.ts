@@ -1,16 +1,16 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, map, startWith } from 'rxjs';
-import { ApiService } from 'src/app/shared/service/api.service';
-import { MapComponent } from 'src/app/map/map.component';
-import { CoordinateService } from 'src/app/shared/service/coordinate.service';
-import { NotificationService } from 'src/app/notification.service';
+import { ApiService } from '../../shared/service/api.service';
+import { MapComponent } from '../../map/map.component';
+import { CoordinateService } from '../../shared/service/coordinate.service';
+import { NotificationService } from '../../notification.service';
 import { DataType, Datafile, NotRef } from '../../../../../common/types/datafile';
 import { SupportedDatasetFileTypes, SupportedRawFileTypes } from '../../../../../common/types/supportedFileTypes';
 
@@ -25,8 +25,10 @@ import { SupportedDatasetFileTypes, SupportedRawFileTypes } from '../../../../..
  * https://material.angular.io/components/select/overview for the dropdown
  */
 @Component({
-  templateUrl: './rawDatasets.component.html',
-  styleUrls: ['./rawDatasets.component.scss']
+    templateUrl: './rawDatasets.component.html',
+    styleUrls: ['./rawDatasets.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RawDatasetsUploadComponent {
   RawDatasetTypeEnum = SupportedRawFileTypes;
@@ -156,6 +158,7 @@ export class RawDatasetsUploadComponent {
         this.notificationService.showInfo(creationSuccessfull);
     },
       error: (err: HttpErrorResponse) => {
+        this.isLoading = false;
         if(err.status === 422){
           const creationSuccessfull = this.translate.instant('createUpdateDatafile.fileAttachError');
           this.notificationService.showInfo(creationSuccessfull);
@@ -166,9 +169,6 @@ export class RawDatasetsUploadComponent {
       }});
   }
 
-  onUpload(event: any) {
-    this.file = event.files[0];
-  }
 
   handleCoordinateChange(coords: [number, number]) {
     const transformedCoord = this.coordinateService.transformToLongLat(coords);
@@ -194,7 +194,7 @@ export class RawDatasetsUploadComponent {
   toDataFile(): Datafile {
     const content:  NotRef = {
         data: JSON.parse("{}"),
-        location: this.latitude != null && this.latitude != null ? { type: 'Point', coordinates: [this.longitude!, this.latitude!] } : undefined
+        location: this.longitude != null && this.latitude != null ? { type: 'Point', coordinates: [this.longitude!, this.latitude!] } : undefined
     }
 
     return {
@@ -207,20 +207,11 @@ export class RawDatasetsUploadComponent {
     };
   }
 
-  /** Stops the propagation of the file upload event */
-  stopPropagation(event: any) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
-  onFileDrop(event: any) {
-    this.stopPropagation(event);
-    this.file = event.dataTransfer.files[0] as File;
-    this.setTitle();
-  }
 
-  onFileSelect(event: any) {
-    this.file = event.files[0];
+  /** Called by <app-file-drop> when a file was chosen or dropped. */
+  onFileSelect(file: File) {
+    this.file = file;
     this.setTitle();
   }
 

@@ -1,7 +1,6 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { TranslateService } from '@ngx-translate/core';
-import { forkJoin, iif, map } from 'rxjs';
 import { AnyFilter, Journey } from '../../../../common/types';
 import { DownloadService } from '../download.service';
 import { DropdownOption } from '../filter-blocks/filter-blocks.component';
@@ -13,11 +12,13 @@ import { ApiService } from '../shared/service/api.service';
  * Also, it allows for the download and continuation of journeys. 
  */
 @Component({
-  selector: 'app-browse-journey',
-  templateUrl: './browse-journey.component.html',
-  styleUrls: ['./browse-journey.component.scss'],
+    selector: 'app-browse-journey',
+    templateUrl: './browse-journey.component.html',
+    styleUrls: ['./browse-journey.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class BrowseJourneyComponent implements AfterViewInit {
+export class BrowseJourneyComponent implements OnInit {
   dataSource : Journey[] = [];
   displayedColumns: string[] = [
     'title',
@@ -45,7 +46,7 @@ export class BrowseJourneyComponent implements AfterViewInit {
     private downloadService: DownloadService
   ) {}
 
-  ngAfterViewInit() {
+  ngOnInit() {
     this.loadData();
   }
 
@@ -54,7 +55,11 @@ export class BrowseJourneyComponent implements AfterViewInit {
    * @param filter the currently applied filters
    */
   loadData(filter?: AnyFilter[]) {
-   iif(() => filter != null && filter.length > 0, this.apiService.filterJourneys({filterSet: filter!},this.limit, this.skip), this.apiService.getJourneys(this.limit, this.skip)).subscribe((result) => {
+    const request$ =
+      filter != null && filter.length > 0
+        ? this.apiService.filterJourneys({ filterSet: filter }, this.limit, this.skip)
+        : this.apiService.getJourneys(this.limit, this.skip);
+    request$.subscribe((result) => {
       this.dataSource = result.results;
       this.totalCount = result.totalCount;
     });
@@ -70,7 +75,6 @@ export class BrowseJourneyComponent implements AfterViewInit {
         'viewAllJourney.deleteSuccess'
       );
       this.notificationService.showInfo(deleteSuccessMessage);
-      this.notificationService.showInfo("Journey deleted");
       this.loadData();
     });
   }

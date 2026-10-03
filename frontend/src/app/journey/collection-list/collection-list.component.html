@@ -1,8 +1,9 @@
-<ng-container *ngFor="let collectionData$ of collectionsData">
-  <app-collection
-    *ngIf="collectionData$ | async as collectionData"
-    [collection]="collectionData.collection"
-    [dataFiles]="collectionData.files"
-    [color]="collectionData.color"
-  ></app-collection>
-</ng-container>
+@for (collectionData$ of collectionsData; track collectionData$) {
+  @if (collectionData$ | async; as collectionData) {
+    <app-collection
+      [collection]="collectionData.collection"
+      [dataFiles]="collectionData.files"
+      [color]="collectionData.color"
+    ></app-collection>
+  }
+}

@@ -4,11 +4,12 @@ import {
   SimpleChanges,
   ViewChild,
   ElementRef,
+  ChangeDetectionStrategy, OnChanges
 } from '@angular/core';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { CollectionData } from '../services/journey.service';
 import { ViewType } from '../journey.component';
 import { Observable, combineLatest } from 'rxjs';
@@ -20,16 +21,20 @@ interface CityTile {
 }
 
 @Component({
-  selector: 'app-threejs-view',
-  templateUrl: './threejs-view.component.html',
-  styleUrls: ['./threejs-view.component.scss'],
+    selector: 'app-threejs-view',
+    templateUrl: './threejs-view.component.html',
+    styleUrls: ['./threejs-view.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class ThreeJSComponent {
+export class ThreeJSComponent implements OnChanges {
   // Basic Three.js components
   private scene: THREE.Scene;
   private camera: THREE.Camera;
-  private renderer: THREE.WebGLRenderer;
-  private controls: OrbitControls;
+  // Created lazily on first loadRenderer(): a WebGL context is only requested
+  // once the 3D tab is opened.
+  private renderer?: THREE.WebGLRenderer;
+  private controls?: OrbitControls;
   private loadedDatapoints: THREE.Mesh[];
   // Window properties
   private windowWidth = 960 * 1.2;
@@ -60,19 +65,11 @@ export class ThreeJSComponent {
       1000000
     );
     this.camera.position.z = 5;
-    // Renderer
-    this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setSize(this.windowWidth, this.windowHeight);
-    // Orbit controls
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true;
-    this.controls.zoomSpeed = 6;
-    this.controls.update();
     // Datapoints
     this.loadedDatapoints = [];
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(_changes: SimpleChanges) {
     // Remove old datapoints
     this.loadedDatapoints.forEach(() => {
       const objMesh = this.scene.getObjectByName('meshName');
@@ -119,11 +116,24 @@ export class ThreeJSComponent {
     );
   }
 
+  /** Creates the WebGL renderer and the orbit controls (once). */
+  private ensureRenderer(): THREE.WebGLRenderer {
+    if (!this.renderer) {
+      this.renderer = new THREE.WebGLRenderer();
+      this.renderer.setSize(this.windowWidth, this.windowHeight);
+      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+      this.controls.enableDamping = true;
+      this.controls.zoomSpeed = 6;
+      this.controls.update();
+    }
+    return this.renderer;
+  }
+
   /**
    * Loads the renderer and starts the render() function.
    */
   loadRenderer() {
-    console.log(this.viewType);
+    const renderer = this.ensureRenderer();
     if (!this.objectsLoaded) {
       // Load city meshes, taken from:
       // https://www.businesslocationcenter.de/berlin3d-downloadportal/?lang=en#/export
@@ -138,17 +148,16 @@ export class ThreeJSComponent {
     if (this.viewType === 'no-map') {
       this.windowWidth = this.container.nativeElement.clientWidth;
       this.windowHeight = (this.windowWidth / 21) * 9;
-      this.renderer.setSize(this.windowWidth, this.windowHeight);
-      console.log('View!');
+      renderer.setSize(this.windowWidth, this.windowHeight);
     } else {
       this.windowWidth = this.container.nativeElement.clientWidth;
       this.windowHeight = (this.windowWidth / 16) * 9;
-      this.renderer.setSize(this.windowWidth, this.windowHeight);
+      renderer.setSize(this.windowWidth, this.windowHeight);
     }
 
     // Append renderer
     const container = document.querySelector('.threejs-renderer');
-    container!.appendChild(this.renderer.domElement);
+    container!.appendChild(renderer.domElement);
     this.renderingStopped = false;
     this.render();
   }
@@ -160,6 +169,7 @@ export class ThreeJSComponent {
     if (!this.renderingStopped) {
       requestAnimationFrame(this.render.bind(this));
     }
+    if (!this.renderer || !this.controls) return;
     this.controls.update();
     // Update the renderer
     this.renderer.render(this.scene, this.camera);
@@ -220,7 +230,7 @@ export class ThreeJSComponent {
           objLoader2.load(
             `assets/threejs-city-data/${tile.name}/${tile.name}.obj`,
             (group) => {
-              const mesh = <THREE.Mesh>group.children[0];
+              const mesh = group.children[0] as THREE.Mesh;
               mesh.frustumCulled = false;
               mesh.geometry.center();
               mesh.translateZ(210);

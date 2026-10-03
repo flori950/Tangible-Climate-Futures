@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export interface InputDialogData {
@@ -11,13 +11,15 @@ export interface InputDialogData {
  * Dialog component for the input dialog
  */
 @Component({
-  selector: 'app-input-dialog',
-  templateUrl: './input-dialog.component.html',
-  styleUrls: ['./input-dialog.component.scss'],
+    selector: 'app-input-dialog',
+    templateUrl: './input-dialog.component.html',
+    styleUrls: ['./input-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class InputDialogComponent<InputDialogComponent> {
+export class InputDialogComponent {
   constructor(
-    public dialogRef: MatDialogRef<InputDialogComponent>,
+    public dialogRef: MatDialogRef<InputDialogComponent, string>,
     @Inject(MAT_DIALOG_DATA)
     public data: InputDialogData
   ) {}

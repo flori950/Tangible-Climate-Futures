@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -11,9 +11,11 @@ export interface InputDialogData {
 }
 
 @Component({
-  selector: 'app-input-dialog',
-  templateUrl: './continue-journey-dialog.component.html',
-  styleUrls: ['./continue-journey-dialog.component.scss'],
+    selector: 'app-input-dialog',
+    templateUrl: './continue-journey-dialog.component.html',
+    styleUrls: ['./continue-journey-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ContinueJourneyDialogComponent {
   titleControl: FormControl;
@@ -41,7 +43,7 @@ export class ContinueJourneyDialogComponent {
   }
 
   addTag(event: MatChipInputEvent) {
-    let tag = (event.value || '').trim();
+    const tag = (event.value || '').trim();
     this.tags.push(tag);
     event.chipInput!.clear();
   }

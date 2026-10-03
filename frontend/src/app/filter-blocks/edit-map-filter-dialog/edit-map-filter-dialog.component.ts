@@ -1,11 +1,13 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AreaFilter, RadiusFilter } from '@common/types';
 
 @Component({
-  selector: 'app-edit-map-filter-dialog',
-  templateUrl: './edit-map-filter-dialog.component.html',
-  styleUrls: ['./edit-map-filter-dialog.component.scss'],
+    selector: 'app-edit-map-filter-dialog',
+    templateUrl: './edit-map-filter-dialog.component.html',
+    styleUrls: ['./edit-map-filter-dialog.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EditMapFilterDialogComponent {
   filter: RadiusFilter | AreaFilter | null;

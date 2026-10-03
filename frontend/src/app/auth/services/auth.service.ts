@@ -28,7 +28,7 @@ export class AuthService {
 
   async login(email: string, password: string) {
     try {
-      const user = await signInWithEmailAndPassword(this.auth, email, password);
+      await signInWithEmailAndPassword(this.auth, email, password);
       return true;
     } catch (error) {
       if ((error as AuthError).code != null)
@@ -44,7 +44,7 @@ export class AuthService {
     }
 
     try {
-      const user = await createUserWithEmailAndPassword(
+      await createUserWithEmailAndPassword(
         this.auth,
         email,
         password
@@ -59,7 +59,7 @@ export class AuthService {
 
   async resetPassword(email: string) {
     try {
-      const user = await sendPasswordResetEmail(this.auth, email);
+      await sendPasswordResetEmail(this.auth, email);
       return true;
     } catch (error) {
       if ((error as AuthError).code != null)
@@ -82,7 +82,6 @@ export class AuthService {
 
   handleAuthError(error: AuthError | string) {
     error = typeof error == 'string' ? error : error.code;
-    console.log(error);
     switch (error) {
       case 'auth/missing-email':
       case 'auth/user-not-found':

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Datafile, NotRefDataFile, RefDataFile } from '@common/types';
 import { JourneyService } from '../services/journey.service';
 import { Observable } from 'rxjs';
@@ -6,9 +6,11 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import { DialogService } from '../../shared/service/dialog.service';
 
 @Component({
-  selector: 'app-data-file-list-entry',
-  templateUrl: './data-file-list-entry.component.html',
-  styleUrls: ['./data-file-list-entry.component.scss'],
+    selector: 'app-data-file-list-entry',
+    templateUrl: './data-file-list-entry.component.html',
+    styleUrls: ['./data-file-list-entry.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DataFileListEntryComponent implements OnChanges {
   @Input({ required: true }) file!: Datafile;

@@ -1,0 +1,35 @@
+<div
+  class="file-drop"
+  [class.drag-over]="isDragOver"
+  (dragenter)="onDragOver($event)"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+>
+  <div class="toolbar">
+    <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
+      <mat-icon>add</mat-icon>
+      {{ chooseLabel }}
+    </button>
+    <input #fileInput class="native-input" type="file" [accept]="accept" (change)="onInputChange($event)" />
+  </div>
+
+  <div class="drop-area">
+    @if (file) {
+      <div class="selected-file">
+        <mat-icon>description</mat-icon>
+        <span class="file-name">{{ file.name }}</span>
+        <button mat-icon-button type="button" [attr.aria-label]="'upload.removeFile' | translate" (click)="clear()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    } @else {
+      <div class="hint"><ng-content></ng-content></div>
+    }
+    @if (rejectedFileName) {
+      <mat-error class="rejected">
+        {{ rejectedFileName }}: {{ 'upload.invalidFileType' | translate }} ({{ accept }})
+      </mat-error>
+    }
+  </div>
+</div>

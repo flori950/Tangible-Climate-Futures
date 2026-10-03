@@ -1,23 +1,26 @@
 <mat-form-field class="tags-form-field" floatLabel="always">
   <mat-label>Tags</mat-label>
   <mat-chip-grid #chipGrid>
-    <mat-chip-row
-      *ngFor="let tagFilter of tagFilters$ | async"
-      (removed)="removeFilter(tagFilter)"
-    >
-      {{ tagFilter.value }}
-      <button matChipRemove aria-label="'remove ' + keyword">
-        <mat-icon>cancel</mat-icon>
-      </button>
-    </mat-chip-row>
+    @for (tagFilter of tagFilters$ | async; track tagFilter) {
+      <mat-chip-row
+        (removed)="removeFilter(tagFilter)"
+        >
+        {{ tagFilter.value }}
+        <button matChipRemove aria-label="'remove ' + keyword">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+    }
     <input
       [placeholder]="'filter-blocks.new-tag' | translate"
       [matChipInputFor]="chipGrid"
       (matChipInputTokenEnd)="addTag($event)"
-    />
-    <mat-error *ngIf="hasAdvancedFilters$ | async">
-      {{ "filter-blocks.has-advanced-filters" | translate }}
-    </mat-error>
+      />
+    @if (hasAdvancedFilters$ | async) {
+      <mat-error>
+        {{ "filter-blocks.has-advanced-filters" | translate }}
+      </mat-error>
+    }
   </mat-chip-grid>
 </mat-form-field>
 
@@ -30,83 +33,84 @@
   <button mat-stroked-button color="primary" (click)="toggleAdvancedFilters()">
     <mat-icon
       [fontIcon]="showAdvancedFilters ? 'visibility_off' : 'visibility'"
-    >
-    </mat-icon
-    >{{
+      >
+      </mat-icon
+      >{{
       showAdvancedFilters
-        ? ("filter-blocks.hide-advanced-filters" | translate)
-        : ("filter-blocks.show-advanced-filters" | translate)
-    }}
-  </button>
-</div>
+      ? ("filter-blocks.hide-advanced-filters" | translate)
+      : ("filter-blocks.show-advanced-filters" | translate)
+      }}
+    </button>
+  </div>
 
-<div
-  class="filter-set"
-  *ngIf="showAdvancedFilters && (filterSet$ | async) as filterSet"
->
-  <ng-container *ngFor="let filter of filterSet$ | async; let i = index">
-    <div class="and" *ngIf="i != 0">
-      {{ "filter-blocks.operation-and" | translate }}
-    </div>
-    <mat-card>
-      <div class="filter">
-        <div
-          *ngIf="isConcatenationFilter(filter); else filterBlock"
-          class="concatenation-filters"
-        >
-          <ng-container
-            *ngFor="let concFilter of $any(filter).filters; let i = index"
-          >
-            <div class="or" *ngIf="i != 0">
-              {{ "filter-blocks.operation-or" | translate }}
-            </div>
-            <div class="or-filter">
+  @if (showAdvancedFilters && (filterSet$ | async); as filterSet) {
+    <div
+      class="filter-set"
+      >
+      @for (filter of filterSet$ | async; track filter; let i = $index) {
+        @if (i !== 0) {
+          <div class="and">
+            {{ "filter-blocks.operation-and" | translate }}
+          </div>
+        }
+        <mat-card>
+          <div class="filter">
+            @if (isConcatenationFilter(filter)) {
+              <div
+                class="concatenation-filters"
+                >
+                @for (concFilter of $any(filter).filters; track concFilter; let i = $index) {
+                  @if (i !== 0) {
+                    <div class="or">
+                      {{ "filter-blocks.operation-or" | translate }}
+                    </div>
+                  }
+                  <div class="or-filter">
+                    <app-filter-block
+                      [filter]="$any(concFilter)"
+                      (onChange)="triggerFilterChange()"
+                      [dropdownOptions]="dropdownOptions"
+                    ></app-filter-block>
+                    <button
+                      class="trash-button"
+                      mat-stroked-button
+                      color="primary"
+                      (click)="removeConcatenationFilter(filter, concFilter)"
+                      >
+                      <mat-icon fontIcon="delete"></mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
               <app-filter-block
-                [filter]="$any(concFilter)"
+                [filter]="$any(filter)"
                 (onChange)="triggerFilterChange()"
                 [dropdownOptions]="dropdownOptions"
               ></app-filter-block>
-
               <button
                 class="trash-button"
                 mat-stroked-button
                 color="primary"
-                (click)="removeConcatenationFilter(filter, concFilter)"
-              >
+                (click)="removeFilter(filter)"
+                >
                 <mat-icon fontIcon="delete"></mat-icon>
               </button>
-            </div>
-          </ng-container>
-        </div>
-
-        <ng-template #filterBlock>
-          <app-filter-block
-            [filter]="$any(filter)"
-            (onChange)="triggerFilterChange()"
-            [dropdownOptions]="dropdownOptions"
-          ></app-filter-block>
+            }
+          </div>
           <button
-            class="trash-button"
             mat-stroked-button
             color="primary"
-            (click)="removeFilter(filter)"
-          >
-            <mat-icon fontIcon="delete"></mat-icon>
+            (click)="addConcatenationFilter(filter)"
+            >
+            <mat-icon fontIcon="add"></mat-icon>
+            {{ "filter-blocks.operation-or" | translate }}
           </button>
-        </ng-template>
-      </div>
-      <button
-        mat-stroked-button
-        color="primary"
-        (click)="addConcatenationFilter(filter)"
-      >
+        </mat-card>
+      }
+      <button mat-stroked-button color="primary" (click)="addFilter()">
         <mat-icon fontIcon="add"></mat-icon>
-        {{ "filter-blocks.operation-or" | translate }}
+        {{ "filter-blocks.operation-and" | translate }}
       </button>
-    </mat-card>
-  </ng-container>
-  <button mat-stroked-button color="primary" (click)="addFilter()">
-    <mat-icon fontIcon="add"></mat-icon>
-    {{ "filter-blocks.operation-and" | translate }}
-  </button>
-</div>
+    </div>
+  }

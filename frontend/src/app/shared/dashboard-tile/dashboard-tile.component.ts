@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 /**
@@ -6,9 +6,11 @@ import { Router } from '@angular/router';
  * title and icon. When clicking the tile, it navigates to the given url.
  */
 @Component({
-  selector: 'app-dashboard-tile',
-  templateUrl: './dashboard-tile.component.html',
-  styleUrls: ['./dashboard-tile.component.scss']
+    selector: 'app-dashboard-tile',
+    templateUrl: './dashboard-tile.component.html',
+    styleUrls: ['./dashboard-tile.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DashboardTileComponent {
 

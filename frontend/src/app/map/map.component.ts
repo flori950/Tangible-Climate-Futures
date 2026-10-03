@@ -4,11 +4,12 @@ import {
   EventEmitter,
   Input,
   OnChanges,
-  AfterViewInit,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
   ElementRef,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatChipListboxChange } from '@angular/material/chips';
 import { TranslateService } from '@ngx-translate/core';
@@ -71,11 +72,13 @@ export interface DisplayCollection {
  */
 
 @Component({
-  selector: 'app-map',
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss'],
+    selector: 'app-map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
-export class MapComponent implements AfterViewInit, OnChanges {
+export class MapComponent implements OnInit, OnChanges {
   
   /** 
    * Emits the coordinates of the location clicked in the map.
@@ -92,7 +95,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   filterUpdated = new EventEmitter<(RadiusFilter | AreaFilter)[]>();
 
   /** Reference to the map in the HTML file */
-  @ViewChild('map')
+  @ViewChild('map', { static: true })
   mapContainer?: ElementRef<HTMLDivElement>;
 
   /**
@@ -130,7 +133,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   pointLayer!: VectorLayer<any>;
 
   /** Search string for the address */
-  address: string = '';
+  address = '';
 
   /** Draw-functionalities for the map. Allows the drawing of shapes */
   draw!: Draw;
@@ -162,7 +165,11 @@ export class MapComponent implements AfterViewInit, OnChanges {
     private notificationService: NotificationService
   ) {}
 
-  ngAfterViewInit() {
+  /**
+   * The map is created in ngOnInit (the map element is static) so that preset
+   * filters are turned into chips before the first change detection run.
+   */
+  ngOnInit() {
     this.initializeMap();
 
     if (!this.enableDrawFeatures) {
@@ -175,12 +182,15 @@ export class MapComponent implements AfterViewInit, OnChanges {
     if (this.presetFilters != null) {
       this.createFeaturesFromPresetFilters(this.presetFilters);
     }
+    this.drawPoints();
 
     this.initializingFilters = false;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['collections'] || (changes['presetFilters'] && this.source)) {
+    // The first changes arrive before ngOnInit created the map; ngOnInit handles them.
+    if (!this.source) return;
+    if (changes['collections'] || changes['presetFilters']) {
       if (this.presetFilters != null) {
         this.createFeaturesFromPresetFilters(this.presetFilters || []);
       }
@@ -209,7 +219,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
       }
 
       //create corresponding feature
-      let feature = isRadiusFilter(filter)
+      const feature = isRadiusFilter(filter)
         ? new Feature({
             geometry: new Geometry.Circle(
               fromLonLat(filter.value.center),
@@ -371,7 +381,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   addSubscription() {
     //a new feature was drawn
     this.source.on('addfeature', (evt) => {
-      var feature = evt.feature;
+      const feature = evt.feature;
       if ( this.searchAreas.find((area) => area.id == getUid(feature?.getGeometry())) != null ){
         //the feature is not new/ the UIDs match -> this should not happen
         return;

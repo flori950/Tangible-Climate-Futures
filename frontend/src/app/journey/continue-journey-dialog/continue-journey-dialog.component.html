@@ -2,27 +2,33 @@
   <mat-form-field [floatLabel]="'always'">
     <mat-label>{{'continueJourneyDialog.title' | translate }}</mat-label>
     <input matInput [placeholder]="'continueJourneyDialog.titlePlaceholder' | translate" [formControl]="titleControl" />
-    <mat-error *ngIf="titleControl.invalid">{{
-      getControlErrorMessage(titleControl) | translate
+    @if (titleControl.invalid) {
+      <mat-error>{{
+        getControlErrorMessage(titleControl) | translate
       }}</mat-error>
+    }
   </mat-form-field>
   <mat-form-field [floatLabel]="'always'">
     <mat-label>{{'continueJourneyDialog.description' | translate }}</mat-label>
     <textarea matInput rows="4" [placeholder]="'continueJourneyDialog.descriptionPlaceholder' | translate"
-      [formControl]="descriptionControl"></textarea>
-    <mat-error *ngIf="descriptionControl.invalid">{{
-      getControlErrorMessage(descriptionControl) | translate
+    [formControl]="descriptionControl"></textarea>
+    @if (descriptionControl.invalid) {
+      <mat-error>{{
+        getControlErrorMessage(descriptionControl) | translate
       }}</mat-error>
+    }
   </mat-form-field>
   <mat-form-field class="tags-form-field" floatLabel="always">
     <mat-label>Tags</mat-label>
     <mat-chip-grid #chipGrid>
-      <mat-chip-row *ngFor="let tag of tags" (removed)="removeTag(tag)">
-        {{ tag }}
-        <button matChipRemove aria-label="'remove ' + keyword">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip-row>
+      @for (tag of tags; track tag) {
+        <mat-chip-row (removed)="removeTag(tag)">
+          {{ tag }}
+          <button matChipRemove aria-label="'remove ' + keyword">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+      }
       <input [placeholder]="'filter-blocks.new-tag' | translate" [matChipInputFor]="chipGrid"
         (matChipInputTokenEnd)="addTag($event)" />
     </mat-chip-grid>

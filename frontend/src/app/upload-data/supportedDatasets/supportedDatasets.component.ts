@@ -1,14 +1,13 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, map, startWith } from 'rxjs';
-import { NotificationService } from 'src/app/notification.service';
-import { ApiService } from 'src/app/shared/service/api.service';
+import { NotificationService } from '../../notification.service';
+import { ApiService } from '../../shared/service/api.service';
 import { SupportedDatasetFileTypes } from '../../../../../common/types/supportedFileTypes';
 
 
@@ -22,8 +21,10 @@ import { SupportedDatasetFileTypes } from '../../../../../common/types/supported
  * https://material.angular.io/components/select/overview for the dropdown
  */
 @Component({
-  templateUrl: './supportedDatasets.component.html',
-  styleUrls: ['./supportedDatasets.component.scss']
+    templateUrl: './supportedDatasets.component.html',
+    styleUrls: ['./supportedDatasets.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SupportedDatasetsUploadComponent {
   DatasetFileTypeEnums = SupportedDatasetFileTypes;
@@ -117,7 +118,7 @@ export class SupportedDatasetsUploadComponent {
   }
 
   formIsValid(): boolean {
-    //The PrimeNG upload compont only allows the correct file type for the other data set types.
+    // <app-file-drop> only lets matching file types through for the other dataset types.
     if((this.datasetType === SupportedDatasetFileTypes.SIMRA && !['', 'text/plain', 'text/csv'].some(type => this.file?.type === type) )
       || this.file === undefined){
       this.uploadError = true;
@@ -148,7 +149,7 @@ export class SupportedDatasetsUploadComponent {
         const creationSuccessfull = this.translate.instant('createUpdateDatafile.creationSuccess');
         this.notificationService.showInfo(creationSuccessfull);
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.isLoading = false;
         const errorMsg = this.translate.instant('createUpdateDatafile.error');
         this.notificationService.showInfo(errorMsg);
@@ -156,9 +157,6 @@ export class SupportedDatasetsUploadComponent {
     });
   }
 
-  onUpload(event: any) {
-    this.file = event.files[0];
-  }
 
   resetForm() {
     this.description = undefined;
@@ -166,20 +164,11 @@ export class SupportedDatasetsUploadComponent {
     this.file = undefined;
   }
 
-  stopPropagation(event: any) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
-  onFileDrop(event: any) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.file = event.dataTransfer.files[0] as File;
-    this.setTitle();
-  }
 
-  onFileSelect(event: any) {
-    this.file = event.files[0];
+  /** Called by <app-file-drop> when a file was chosen or dropped. */
+  onFileSelect(file: File) {
+    this.file = file;
     this.setTitle();
   }
 

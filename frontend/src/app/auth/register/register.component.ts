@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegisterComponent {
   email = '';

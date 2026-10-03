@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { TranslateService } from '@ngx-translate/core';
 
 @Component({
-  selector: 'app-reset-password',
-  templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss'],
+    selector: 'app-reset-password',
+    templateUrl: './reset-password.component.html',
+    styleUrls: ['./reset-password.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ResetPasswordComponent {
   email = '';

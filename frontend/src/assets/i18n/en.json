@@ -195,7 +195,9 @@
     "chooseLabel": "Choose file",
     "dropAreaLabel": "Drop file here",
     "cancelButtonLabel": "Cancel",
-    "uploadButtonLabel": "Upload"
+    "uploadButtonLabel": "Upload",
+    "removeFile": "Remove file",
+    "invalidFileType": "invalid file type"
   },
   "txt": {
     "headerUpload": "Text file upload"

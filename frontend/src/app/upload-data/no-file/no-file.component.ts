@@ -1,16 +1,16 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { Observable, catchError, delay, map, startWith } from 'rxjs';
-import { ApiService } from 'src/app/shared/service/api.service';
-import { MapComponent } from 'src/app/map/map.component';
-import { CoordinateService } from 'src/app/shared/service/coordinate.service';
-import { NotificationService } from 'src/app/notification.service';
+import { Observable, catchError, map, startWith } from 'rxjs';
+import { ApiService } from '../../shared/service/api.service';
+import { MapComponent } from '../../map/map.component';
+import { CoordinateService } from '../../shared/service/coordinate.service';
+import { NotificationService } from '../../notification.service';
 import {
   MediaType,
   DataType,
@@ -38,8 +38,10 @@ interface DropdownOption {
  * https://material.angular.io/components/select/overview for the dropdown
  */
 @Component({
-  templateUrl: './no-file.component.html',
-  styleUrls: ['./no-file.component.scss'],
+    templateUrl: './no-file.component.html',
+    styleUrls: ['./no-file.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NoFileUploadComponent {
   isCreatingDataFile = true;
@@ -51,7 +53,7 @@ export class NoFileUploadComponent {
   selectedKeywords: string[] = [];
 
   text?: string;
-  isTextExpanded: boolean = false;
+  isTextExpanded = false;
   url?: string;
   mediaType?: MediaType;
 
@@ -278,7 +280,7 @@ export class NoFileUploadComponent {
       content = {
         data: { text: this.text! as unknown as JsonObject }, //this will also escape "bad" characters in the text
         location:
-          this.latitude != null && this.latitude != null
+          this.longitude != null && this.latitude != null
             ? { type: 'Point', coordinates: [this.longitude!, this.latitude!] }
             : undefined,
       };

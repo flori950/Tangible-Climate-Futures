@@ -262,7 +262,7 @@ export class JourneyService {
       data: journey,
     });
 
-    let savedJourney = new Subject<Journey>();
+    const savedJourney = new Subject<Journey>();
     dialogRedf.afterClosed().subscribe(async (result) => {
       if (!result) return;
       const user = await firstValueFrom(this.auth.user$);
@@ -306,7 +306,10 @@ export class JourneyService {
    */
   selectCollection(collection: Collection | null) {
     if (!this.journeySubject.value) return;
-    if (!this.journeySubject.value.collections.find((col) => col == collection))
+    if (
+      collection != null &&
+      !this.journeySubject.value.collections.find((col) => col == collection)
+    )
       throw Error(
         'This Collection is not part of the currently loaded Journey!'
       );
@@ -373,7 +376,7 @@ export class JourneyService {
    */
   selectDataFiles(...dataFiles: Datafile[]) {
     const excluded = this.excludedDataFilesSubject.value;
-    for (let dataFile of dataFiles) excluded.delete(dataFile._id!);
+    for (const dataFile of dataFiles) excluded.delete(dataFile._id!);
 
     this.excludedDataFilesSubject.next(excluded);
   }
@@ -383,7 +386,7 @@ export class JourneyService {
    */
   deselectDataFiles(...dataFiles: Datafile[]) {
     const excluded = this.excludedDataFilesSubject.value;
-    for (let dataFile of dataFiles) excluded.add(dataFile._id!);
+    for (const dataFile of dataFiles) excluded.add(dataFile._id!);
 
     this.excludedDataFilesSubject.next(excluded);
   }
