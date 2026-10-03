@@ -1,47 +1,41 @@
-# Load the node image from Docker Hub
-# Node.js and NPM already installed
-FROM node:16 as builder
+# Express public API (build context: repository root, see docker-compose.yml)
+#
+#   docker build -f backend/public-api/server.Dockerfile -t tcf-public-api .
+#
+# Node 24 is the current Active LTS. Do not move to Node >= 25 before
+# firebase-admin's transitive dependency buffer-equal-constant-time is fixed
+# (it uses the removed SlowBuffer API, see backend/public-api/README.md).
 
-# Create app directory
-WORKDIR /usr/src/backend
+# ---- Build stage: compile TypeScript and generate the tsoa routes/spec ----
+FROM node:24-slim AS builder
+
+# Keep the repository layout: the API imports ../../common/types
+WORKDIR /usr/src/backend/public-api
 
 COPY backend/public-api/package*.json ./
-
 RUN npm ci
 
-# Copy source code and build dependencies
+COPY common/types/ /usr/src/common/types/
+COPY backend/public-api/tsoa.json backend/public-api/tsconfig.json ./
 COPY backend/public-api/src ./src
-COPY backend/public-api/tsoa.json ./
-COPY backend/public-api/tsconfig.json ./
-COPY common/types/ ../../common/types
-
-# Copy firebase config
-COPY frontend/src/environments/environment.ts ../../frontend/src/environments/environment.ts
 
 RUN npm run build
 
-# Smaller node image
-FROM node:slim
+# ---- Runtime stage: production dependencies + compiled output only ----
+FROM node:24-slim
 
-## Environment variables
-ENV NODE_ENV production
+ENV NODE_ENV=production
 ENV PORT=8080
 
-# Create app directory
 WORKDIR /usr/src/app
 
-# Install app dependencies
 COPY backend/public-api/package*.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
-COPY --from=builder /usr/src/backend/dist ./dist
+COPY --from=builder /usr/src/backend/public-api/dist ./dist
 
-# Install app dependencies
-RUN npm ci --omit=dev --ignore-scripts
-
-# change to the non-root user
+# Run as the unprivileged user shipped with the node image
 USER node
 
-# Expose the port
-EXPOSE "${PORT}"
-# Define the runtime
-CMD [ "node", "dist/src/backend/src/index.js" ]
+EXPOSE 8080
+CMD ["node", "--max-old-space-size=4096", "dist/backend/public-api/src/index.js"]
