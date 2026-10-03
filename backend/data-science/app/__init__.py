@@ -4,7 +4,9 @@ Module responsible for creating the Flask application and setting up routes.
 
 from flask import Flask
 from flask_restx import Api
+
 from app.middlewares import ErrorHandlerMiddleware
+
 
 def add_health_check_endpoint(app):
     """
@@ -12,6 +14,7 @@ def add_health_check_endpoint(app):
 
     :param app: The Flask application.
     """
+
     @app.route("/health")
     def health_check():
         """
@@ -21,11 +24,13 @@ def add_health_check_endpoint(app):
         """
         return {"status": "healthy"}
 
+
 def add_api_routes(app):
     """
     Adds API routes and namespaces to the Flask application.
 
     :param app: The Flask application.
+    :return: The flask-restx ``Api`` instance.
     """
     api = Api(
         app,
@@ -41,6 +46,8 @@ def add_api_routes(app):
 
     # Add namespaces to the API
     api.add_namespace(data_processing_api)
+    return api
+
 
 def create_app(mode, config):
     """
@@ -57,9 +64,9 @@ def create_app(mode, config):
     add_health_check_endpoint(app)
 
     # Add API routes and namespaces
-    add_api_routes(app)
+    api = add_api_routes(app)
 
-    # Apply the error handling middleware
-    ErrorHandlerMiddleware(app)
+    # Apply the error handling middleware (Flask app + restx Api)
+    ErrorHandlerMiddleware(app, api)
 
     return app
