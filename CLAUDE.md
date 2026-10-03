@@ -18,7 +18,7 @@ Florian Jäger's fork of the TU Berlin ADSP SS23 team project *Tangible Climate 
 | `deploy/` | Terraform, GCE VM; `terraform test` with mocked providers | `terraform fmt -recursive -check && terraform validate && tflint && terraform test` (Terraform not installed on the Mac; CI runs it) |
 | `.github/workflows/` | one CI workflow per part + Docker Compose health check | keep `.github/README.md` table in sync |
 
-Root shortcuts: `npm test`, `npm run test:frontend|test:backend|test:python`, `npm run lint`, `npm run setup`.
+Root shortcuts: `npm test`, `npm run test:e2e` (API end-to-end scenarios with real MongoDB + Python service, needs `npm run setup:python` first), `npm run test:frontend|test:backend|test:python`, `npm run lint`, `npm run setup`.
 
 ## Environment facts
 

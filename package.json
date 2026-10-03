@@ -19,7 +19,8 @@
     "test:frontend": "cd frontend && npm run test:ci",
     "test:backend": "cd backend/public-api && npm test",
     "test:python": "cd backend/data-science && .venv/bin/python -m pytest",
-    "lint": "cd frontend && npm run lint && cd ../backend/public-api && npm run lint && cd ../data-science && .venv/bin/ruff check ."
+    "lint": "cd frontend && npm run lint && cd ../backend/public-api && npm run lint && cd ../data-science && .venv/bin/ruff check .",
+    "test:e2e": "cd backend/public-api && DATASCIENCE_PYTHON=\"$PWD/../data-science/.venv/bin/python\" npm run test:e2e"
   },
   "engines": {
     "node": ">=24 <25"

@@ -78,6 +78,7 @@ npm test                 # all three suites: frontend (Vitest), public API (Jest
 npm run test:frontend
 npm run test:backend
 npm run test:python
+npm run test:e2e         # API end-to-end scenarios: compiled server, real MongoDB, real Python service
 npm run lint             # angular-eslint, ESLint, ruff
 ```
 
