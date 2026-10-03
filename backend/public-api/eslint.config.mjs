@@ -28,6 +28,13 @@ export default defineConfig(
     },
   },
   {
+    // Node scripts (local end-to-end scenarios) and this config
+    files: ["**/*.mjs"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+  {
     files: ["__test__/**/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",

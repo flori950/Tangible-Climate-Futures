@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
-    "format:fix": "prettier --write ."
+    "format:fix": "prettier --write .",
+    "test:e2e": "npm run build && node scripts/e2e-local.mjs"
   },
   "nodemonConfig": {
     "watch": [

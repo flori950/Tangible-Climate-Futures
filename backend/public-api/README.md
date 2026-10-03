@@ -39,6 +39,7 @@ A local MongoDB can be started from the repository root with `npm run deploy:mon
 | `npm run start:dev`     | `build` + `start`                                                                                 |
 | `npm run dev`           | nodemon: rebuild and restart on changes in `src/` and `../../common/types`                        |
 | `npm test`              | Jest test suite (in band, in-memory MongoDB)                                                      |
+| `npm run test:e2e`      | Builds and runs the local end-to-end scenarios (`scripts/e2e-local.mjs`), see below               |
 | `npm run test:coverage` | Same with coverage report (`coverage/`)                                                           |
 | `npm run typecheck`     | Type-checks sources **and tests** (`tsconfig.test.json`), Jest itself only transpiles             |
 | `npm run lint`          | ESLint (flat config `eslint.config.mjs`, typescript-eslint)                                       |
@@ -203,6 +204,16 @@ npm run typecheck       # type errors in tests are not reported by ts-jest (isol
   access apart from the one-time MongoDB binary download.
 
 See [`__test__/README.md`](__test__/README.md) for the layout.
+
+### Local end-to-end scenarios
+
+`npm run test:e2e` builds the API and runs [`scripts/e2e-local.mjs`](scripts/README.md): it
+starts a real MongoDB (data on disk), the compiled server in four configurations (development,
+production-like limits, authentication enabled, unreachable database) and optionally the real
+Python data-science service, and checks 88 scenarios over HTTP: CRUD, uploads, all filters,
+NetCDF/CERv2 with GridFS, the frontend's journey round trip, restarts, SIGTERM, missing
+database, CORS and size limits, 401s. Results on 03.10.2026: 88/88 on Node 26.8.2 and on
+Node 24.21.0 (with the Python service), 73/73 without it.
 
 ## Docker
 
