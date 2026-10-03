@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "sourceMap": false,
+    "types": ["node", "multer"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "build/**/*.ts",
+    "__test__/**/*.ts",
+    "jest.setup.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
