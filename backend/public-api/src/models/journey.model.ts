@@ -6,7 +6,7 @@ import { Journey } from "../../../../common/types";
  * The MongoDB Schema for the Journey document.
  * For more info look inside Repo's Wiki.
  */
-const JourneySchema = new Schema<Journey>(
+const JourneySchema = new Schema<Journey & { ownerUID?: string }>(
   {
     title: {
       type: String,
@@ -36,6 +36,13 @@ const JourneySchema = new Schema<Journey>(
     excludedIDs: {
       type: [String],
       required: false,
+    },
+    // Firebase UID of the creator. Internal: never returned by the API (select: false),
+    // see services/journey/journey.service.ts for the ownership rules.
+    ownerUID: {
+      type: String,
+      select: false,
+      index: true,
     },
   },
   { timestamps: true },

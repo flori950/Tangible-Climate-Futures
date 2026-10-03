@@ -11,7 +11,9 @@ import {
   SuccessResponse,
   Tags,
   Security,
+  Request,
 } from "tsoa";
+import type { Request as ExRequest } from "express";
 
 import type {
   FilterSetParams,
@@ -22,7 +24,12 @@ import type {
   PaginationResult,
   DeleteManyParam,
 } from "../../../../common/types";
-import { NotFoundError, OperationNotSupportedError } from "../errors";
+import {
+  ForbiddenError,
+  NotFoundError,
+  OperationNotSupportedError,
+} from "../errors";
+import { getRequestUserId } from "../authentication";
 import JourneyService from "../services/journey/journey.service";
 
 /**
@@ -34,7 +41,10 @@ import JourneyService from "../services/journey/journey.service";
 @Tags("Journey")
 @Security("firebase")
 export class JourneyController extends Controller {
-  private readonly journeyService = new JourneyService();
+  /** Creates the service for the authenticated user of this request. */
+  private service(request: ExRequest): JourneyService {
+    return new JourneyService(getRequestUserId(request));
+  }
 
   /**
    * Retrieves the list of existing Journeys.
@@ -45,11 +55,12 @@ export class JourneyController extends Controller {
   @Get("limit={limit}&skip={skip}")
   @SuccessResponse(200, "Sent all journeys.")
   public async getAllJourneys(
+    @Request() request: ExRequest,
     @Path() skip: number,
     @Path() limit: number,
   ): Promise<PaginationResult<Journey>> {
     this.setStatus(200);
-    return this.journeyService.getAll(skip, limit);
+    return this.service(request).getAll(skip, limit);
   }
 
   /**
@@ -63,10 +74,11 @@ export class JourneyController extends Controller {
   @Response<NotFoundError>(404, "Not found")
   @SuccessResponse(200, "Journey found.")
   public async getJourney(
+    @Request() request: ExRequest,
     @Path() journeyId: MongooseObjectId,
   ): Promise<Journey> {
     this.setStatus(200);
-    return this.journeyService.get(journeyId);
+    return this.service(request).get(journeyId);
   }
 
   /**
@@ -78,10 +90,11 @@ export class JourneyController extends Controller {
   @SuccessResponse(200, "Created successfully.")
   @Post()
   public async createJourney(
+    @Request() request: ExRequest,
     @Body() body: JourneyCreateParams,
   ): Promise<Journey> {
     this.setStatus(200);
-    return this.journeyService.create(body);
+    return this.service(request).create(body);
   }
 
   /**
@@ -93,12 +106,14 @@ export class JourneyController extends Controller {
    */
   @Delete("{journeyId}")
   @Response<NotFoundError>(404, "Not found")
+  @Response<ForbiddenError>(403, "Journey belongs to another user")
   @SuccessResponse(200, "Deleted successfully.")
   public async deleteJourney(
+    @Request() request: ExRequest,
     @Path() journeyId: MongooseObjectId,
   ): Promise<Journey> {
     this.setStatus(200);
-    return this.journeyService.delete(journeyId);
+    return this.service(request).delete(journeyId);
   }
 
   /**
@@ -109,11 +124,13 @@ export class JourneyController extends Controller {
    */
   @Post("deleteMany")
   @SuccessResponse(200, "Deleted successfully.")
+  @Response<ForbiddenError>(403, "A journey belongs to another user")
   public async deleteManyDatafiles(
+    @Request() request: ExRequest,
     @Body() body: DeleteManyParam,
   ): Promise<Journey[]> {
     this.setStatus(200);
-    return this.journeyService.deleteMany(body);
+    return this.service(request).deleteMany(body);
   }
 
   /**
@@ -126,13 +143,15 @@ export class JourneyController extends Controller {
    */
   @Put("{journeyId}")
   @Response<NotFoundError>(404, "Not found")
+  @Response<ForbiddenError>(403, "Journey belongs to another user")
   @SuccessResponse(200, "Updated successfully.")
   public async updateJourney(
+    @Request() request: ExRequest,
     @Path() journeyId: MongooseObjectId,
     @Body() body: JourneyUpdateParams,
   ): Promise<Journey> {
     this.setStatus(200);
-    return this.journeyService.update(journeyId, body);
+    return this.service(request).update(journeyId, body);
   }
 
   /**
@@ -148,11 +167,12 @@ export class JourneyController extends Controller {
   @SuccessResponse(200, "Sent all matching files.")
   @Response<OperationNotSupportedError>(400, "Operation not supported.")
   public async filterJourneys(
+    @Request() request: ExRequest,
     @Path() skip: number,
     @Path() limit: number,
     @Body() body: FilterSetParams,
   ): Promise<PaginationResult<Journey>> {
     this.setStatus(200);
-    return this.journeyService.getFiltered(body, skip, limit);
+    return this.service(request).getFiltered(body, skip, limit);
   }
 }

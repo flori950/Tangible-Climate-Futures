@@ -45,4 +45,13 @@ export default class NetCDFJsonBucketService extends BucketService {
   override async downloadFile(documentId: string): Promise<unknown> {
     return await super.downloadFile(documentId + this.fileExtension);
   }
+
+  /**
+   * Deletes the NetCDF JSON file of a datafile (no-op if there is none).
+   *
+   * @param documentId - The unique identifier for the document.
+   */
+  async deleteFile(documentId: string): Promise<boolean> {
+    return await this.deleteFilesByName(documentId + this.fileExtension);
+  }
 }

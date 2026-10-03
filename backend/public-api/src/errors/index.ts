@@ -3,3 +3,5 @@ export * from "./operationNotSupported.error";
 export * from "./failedToParse.error";
 export * from "./wrongObjectType.error";
 export * from "./unauthorized.error";
+export * from "./forbidden.error";
+export * from "./payloadTooLarge.error";

@@ -3,6 +3,7 @@
  */
 import { randomUUID } from "node:crypto";
 import {
+  Datafile,
   JsonObject,
   SupportedDatasetFileTypes,
   NotRefDataFile,
@@ -18,13 +19,15 @@ import NetcdfApi from "../../services/netcdfApi.service";
  * @param stepSize - The sampling interval (sample every Nth data point)
  * @param tags - [Optional] The tags to be appended to all created documents, seperated by commas.
  * @param description - [Optional] The description to be added to all created documents.
+ * @returns The created datafiles WITHOUT `content.data` (metadata only, the NetCDF
+ *          payloads would make the response very large). Use `uploadID` to query them.
  */
 export async function handleCERV2File(
   file: Express.Multer.File,
   tags = "",
   stepSize = 10,
   description?: string,
-) {
+): Promise<Datafile[]> {
   const uploadId = randomUUID();
 
   // Retrieve metadata from the NetCDF file
@@ -34,9 +37,12 @@ export async function handleCERV2File(
   const locationVariableNames = getVariablesNamesWithLocationData(metadata);
 
   // Split and trim tags
-  const tagList = tags.split(",").map((tag) => tag.trim());
+  const tagList = tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 
-  console.log("Adding data to data files");
+  const created: Datafile[] = [];
   for await (const datafile of createDatafiles(
     file,
     metadata,
@@ -46,9 +52,12 @@ export async function handleCERV2File(
     uploadId,
     description,
   )) {
-    // Create and store datafiles in the database
-    await datafileModel.create(datafile);
+    // Create and store datafiles in the database (one by one while streaming)
+    const document = (await datafileModel.create(datafile)).toObject();
+    delete (document.content as { data?: unknown }).data;
+    created.push(document as Datafile);
   }
+  return created;
 }
 
 /**

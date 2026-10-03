@@ -3,7 +3,7 @@ import {
   DatafileCreateParams,
   FilterSetParams,
   DatafileUpdateParams,
-  AnyFilter,
+  DeleteManyParam,
   SupportedRawFileTypes,
   MongooseObjectId,
   DataType,
@@ -18,18 +18,13 @@ import {
   OperationNotSupportedError,
   WrongObjectTypeError,
 } from "../../errors";
-import { PipelineStage } from "mongoose";
+import { Types } from "mongoose";
 import {
   handleCSVFile,
   handleJSONFile,
   handleTXTFile,
 } from "./datafileRawParsing.service";
 import { handleSimRaFile } from "./datafileSimraParsing.service";
-import {
-  createBasicFilterQuery,
-  createConcatenationFilterQuery,
-} from "../filter/filter.service";
-
 import NetcdfApi from "../netcdfApi.service";
 import NetCDFJsonBucketService from "../bucket/netcdfBucket.service";
 import { parsePath } from "../../utils/utils";
@@ -58,16 +53,18 @@ export default class DatafileService extends CrudService<
     super(DatafileModel);
   }
 
-  override async get(id: string): Promise<Datafile> {
-    const datafile = await super.get(id);
-
-    if (
-      "data" in datafile.content &&
-      datafile.content?.data?.dataObject?.dataId
-    ) {
+  /**
+   * Replaces the GridFS reference (`content.data.dataObject.dataId`) of a NetCDF datafile
+   * with the stored data. Errors are logged and the datafile is returned unchanged.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async resolveNetCdfData<D extends { _id?: any; content: any }>(
+    datafile: D,
+  ): Promise<D> {
+    if (datafile.content?.data?.dataObject?.dataId) {
       try {
         const fileData = await this.netCDFbucketService.downloadFile(
-          datafile._id as string,
+          String(datafile._id),
         );
         datafile.content.data.dataObject.data = fileData;
         delete datafile.content.data.dataObject.dataId;
@@ -75,8 +72,31 @@ export default class DatafileService extends CrudService<
         console.error("Error while reading file data:", error);
       }
     }
-
     return datafile;
+  }
+
+  override async get(id: string): Promise<Datafile> {
+    return this.resolveNetCdfData(await super.get(id));
+  }
+
+  /**
+   * Deletes a datafile and its NetCDF data stored in GridFS.
+   */
+  override async delete(id: string): Promise<Datafile> {
+    const deleted = await super.delete(id);
+    await this.netCDFbucketService.deleteFile(String(deleted._id));
+    return deleted;
+  }
+
+  /**
+   * Deletes datafiles and their NetCDF data stored in GridFS.
+   */
+  override async deleteMany(documentIDs: DeleteManyParam): Promise<Datafile[]> {
+    const deleted = await super.deleteMany(documentIDs);
+    for (const datafile of deleted) {
+      await this.netCDFbucketService.deleteFile(String(datafile._id));
+    }
+    return deleted;
   }
 
   /**
@@ -91,44 +111,13 @@ export default class DatafileService extends CrudService<
     skip: number,
     limit: number,
   ): Promise<PaginationResult<Datafile>> {
-    // Create commands array
-    const commandsArray: Array<PipelineStage> = [];
-    commandsArray.push({ $match: {} });
-    commandsArray.push({ $skip: skip });
-    commandsArray.push({ $limit: limit });
-    // If only metadata is returned delete the data
-    if (onlyMetadata) {
-      commandsArray.push({ $unset: "content.data" });
-    }
-    const results = await this.model.aggregate(commandsArray).exec();
-
-    const datafiles = results.map(async (datafile) => {
-      if (
-        "data" in datafile.content &&
-        datafile.content?.data?.dataObject?.dataId
-      ) {
-        try {
-          const fileData = await this.netCDFbucketService.downloadFile(
-            datafile._id as string,
-          );
-          datafile.content.data.dataObject.data = fileData;
-          delete datafile.content.data.dataObject.dataId;
-        } catch (error) {
-          console.error("Error while reading file data:", error);
-        }
-      }
-      return datafile;
+    const page = await this.getAll(skip, limit, {
+      project: onlyMetadata ? [{ $unset: "content.data" }] : [],
     });
-
-    const resultsWithNetCDF = await Promise.all(datafiles);
-
-    const totalCount = await this.model.countDocuments({}).exec();
-    return {
-      skip: skip,
-      limit: limit,
-      totalCount: totalCount,
-      results: resultsWithNetCDF,
-    };
+    page.results = await Promise.all(
+      page.results.map((datafile) => this.resolveNetCdfData(datafile)),
+    );
+    return page;
   }
 
   /**
@@ -201,6 +190,10 @@ export default class DatafileService extends CrudService<
         throw new OperationNotSupportedError("File type not supported!");
       }
     }
+    // Replacing NetCDF data with another file type: remove the old GridFS file
+    if (fileType !== SupportedRawFileTypes.NETCDF) {
+      await this.netCDFbucketService.deleteFile(documentID);
+    }
     // Attach the data
     if (dataObject) {
       updatedEntity = await this.attachDataToFile(documentID, dataObject);
@@ -258,7 +251,7 @@ export default class DatafileService extends CrudService<
     steps?: string,
   ): Promise<Datafile[]> {
     // Create the Datafile JSON object based on file type
-    let createdDocuments: Datafile[] = [];
+    let createdDocuments: Datafile[];
     switch (dataset) {
       // Handles SimRa files
       case SupportedDatasetFileTypes.SIMRA: {
@@ -272,7 +265,7 @@ export default class DatafileService extends CrudService<
       }
       // Handles CERv2 files
       case SupportedDatasetFileTypes.CERV2: {
-        await handleCERV2File(
+        createdDocuments = await handleCERV2File(
           file,
           tags,
           steps ? +steps : undefined,
@@ -308,41 +301,15 @@ export default class DatafileService extends CrudService<
    * @param onlyMetadata When returning objects, the data is skipped and only the metadata is returned.
    * @returns A PaginationResult object, containing results
    */
-  async getFiltered(
+  async getFilteredExtended(
     filterSetParams: FilterSetParams,
     skip: number,
     limit: number,
     onlyMetadata: boolean,
   ): Promise<PaginationResult<Datafile>> {
-    const jsonQueries: PipelineStage[] = [];
-    filterSetParams.filterSet.forEach((filter: AnyFilter) => {
-      if (!("booleanOperation" in filter)) {
-        // Single DataFileFilter
-        jsonQueries.push({ $match: createBasicFilterQuery(filter) });
-      } else {
-        // Boolean Concatenation DataFileFilter
-        jsonQueries.push({
-          $match: createConcatenationFilterQuery(filter),
-        });
-      }
+    return this.getFiltered(filterSetParams, skip, limit, {
+      project: onlyMetadata ? [{ $unset: "content.data" }] : [],
     });
-    // Get the count
-    const totalCount = await this.model.aggregate(jsonQueries).exec();
-    // Pagination
-    jsonQueries.push({ $skip: skip });
-    jsonQueries.push({ $limit: limit });
-    // If only metadata is returned delete the data
-    if (onlyMetadata) {
-      jsonQueries.push({ $unset: "content.data" });
-    }
-    // Get the result
-    const results = await this.model.aggregate(jsonQueries).exec();
-    return {
-      skip: skip,
-      limit: limit,
-      totalCount: totalCount.length,
-      results: results,
-    };
   }
 
   /**
@@ -374,63 +341,105 @@ export default class DatafileService extends CrudService<
   }
 
   /**
+   * Parses the comma-separated IDs and makes sure that all documents exist.
+   * @throws WrongObjectTypeError for malformed IDs, NotFoundError for unknown IDs.
+   */
+  private async resolveExistingIds(IDs: string): Promise<string[]> {
+    const ids = [
+      ...new Set(
+        IDs.split(",")
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
+    ];
+    const invalid = ids.filter((id) => !Types.ObjectId.isValid(id));
+    if (ids.length === 0 || invalid.length > 0) {
+      throw new WrongObjectTypeError(
+        `Invalid document IDs: ${invalid.join(", ") || "(none given)"}`,
+      );
+    }
+    const existing = await this.model
+      .find({ _id: { $in: ids } }, { _id: 1 })
+      .lean();
+    const existingIds = new Set(existing.map((doc) => String(doc._id)));
+    const missing = ids.filter((id) => !existingIds.has(id));
+    if (missing.length > 0) {
+      throw new NotFoundError(`Documents not found: ${missing.join(", ")}`);
+    }
+    return ids;
+  }
+
+  /** Loads the given documents in the given order. */
+  private async findInOrder(ids: string[]): Promise<Datafile[]> {
+    const documents = await this.model.find({ _id: { $in: ids } });
+    const byId = new Map(documents.map((doc) => [String(doc._id), doc]));
+    return ids.map((id) => byId.get(id)).filter(Boolean) as Datafile[];
+  }
+
+  /**
    * Deletes a value from all given documents under the given path.
+   * All IDs are checked first, so either all documents are changed or none.
    *
    * @param IDs The IDs of all documents which will be changed, comma separated.
    * @param path Path of the variable to delete.
    * @returns A promise that resolves to the updated Datafiles.
+   * @throws OperationNotSupportedError if the path is not writable.
+   * @throws NotFoundError if one of the documents does not exist.
    */
   async deleteNestedValue(IDs: string, path: string): Promise<Datafile[]> {
-    // Split the IDs
-    const documentIds = IDs.split(",");
-    // Add the value to all documents
-    const documents: Datafile[] = [];
-    for (let id of documentIds) {
-      id = id.trim();
-      const document = await this.model.findByIdAndUpdate(
-        id,
-        { $unset: { [parsePath(path)]: "" } },
-        { returnDocument: "after" },
-      );
-      if (!document) {
-        throw new NotFoundError(`Document ${id} not found.`);
-      }
-      documents.push(document);
-    }
-    // Return changed datafiles
-    return documents;
+    const mongoPath = toWritablePath(path);
+    const ids = await this.resolveExistingIds(IDs);
+    await this.model.updateMany(
+      { _id: { $in: ids } },
+      { $unset: { [mongoPath]: "" } },
+    );
+    return this.findInOrder(ids);
   }
 
   /**
    * Adds a value to all given documents under the given path.
+   * All IDs are checked first, so either all documents are changed or none.
    *
    * @param IDs The IDs of all documents which will be changed, comma separated.
    * @param path Path of the variable to change.
    * @param value The new value.
    * @returns A promise that resolves to the updated Datafiles.
+   * @throws OperationNotSupportedError if the path is not writable.
+   * @throws NotFoundError if one of the documents does not exist.
    */
   async updateNestedValue(
     IDs: string,
     path: string,
     value: unknown,
   ): Promise<Datafile[]> {
-    // Split the IDs
-    const documentIds = IDs.split(",");
-    // Add the value to all documents
-    const documents: Datafile[] = [];
-    for (let id of documentIds) {
-      // Delete empty spaces
-      id = id.trim();
-      const document = await this.model.findByIdAndUpdate(
-        id,
-        { [parsePath(path)]: value },
-        { returnDocument: "after" },
-      );
-      if (!document) {
-        throw new NotFoundError(`Document ${id} not found.`);
-      }
-      documents.push(document);
-    }
-    return documents;
+    const mongoPath = toWritablePath(path);
+    const ids = await this.resolveExistingIds(IDs);
+    await this.model.updateMany(
+      { _id: { $in: ids } },
+      { $set: { [mongoPath]: value } },
+    );
+    return this.findInOrder(ids);
   }
+}
+
+/** Top-level fields that the nested-value endpoints may change. */
+const WRITABLE_ROOT_FIELDS = ["content", "title", "description", "tags"];
+
+/**
+ * Converts a nested-value path (`a.b[0]`) into a MongoDB path and makes sure it is writable:
+ * only below `content`, `title`, `description` or `tags`, no empty segments and no `$` operators.
+ * @throws OperationNotSupportedError for any other path.
+ */
+export function toWritablePath(path: string): string {
+  const mongoPath = parsePath(path);
+  const segments = mongoPath.split(".");
+  if (
+    segments.some((segment) => segment === "" || segment.startsWith("$")) ||
+    !WRITABLE_ROOT_FIELDS.includes(segments[0])
+  ) {
+    throw new OperationNotSupportedError(
+      `The path "${path}" cannot be changed. Allowed are paths below: ${WRITABLE_ROOT_FIELDS.join(", ")}.`,
+    );
+  }
+  return mongoPath;
 }

@@ -44,7 +44,6 @@ const DatafileSchema = new Schema<Datafile>(
       location: {
         coordinates: {
           type: [Number],
-          index: true,
           // Do not create an empty `location` for datafiles without coordinates
           default: undefined,
         },
@@ -63,5 +62,9 @@ const DatafileSchema = new Schema<Datafile>(
   },
   { timestamps: true },
 );
+
+// Geo index for the RADIUS/AREA filters ($geoWithin). Datafiles without `location` are
+// skipped (2dsphere indexes are sparse). Requires valid GeoJSON: [lon, lat] within range.
+DatafileSchema.index({ "content.location": "2dsphere" });
 
 export default model<Datafile>("Datafile", DatafileSchema, "datafiles");

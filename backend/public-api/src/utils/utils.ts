@@ -7,7 +7,8 @@ export const parsePath = (path: string): string => {
 
 /**
  * Builds a GeoJSON point from (string or number) longitude/latitude values.
- * Returns `undefined` if one of the values is missing or not a finite number,
+ * Returns `undefined` if one of the values is missing, not a finite number or out of
+ * range (|lon| > 180, |lat| > 90),
  * so that datapoints without coordinates are stored without a location
  * instead of with a bogus [0, 0] / [NaN, NaN] point.
  */
@@ -19,7 +20,12 @@ export const toPointLocation = (
   if (lat === undefined || lat === null || lat === "") return undefined;
   const lonNumber = Number(lon);
   const latNumber = Number(lat);
-  if (!Number.isFinite(lonNumber) || !Number.isFinite(latNumber)) {
+  if (
+    !Number.isFinite(lonNumber) ||
+    !Number.isFinite(latNumber) ||
+    Math.abs(lonNumber) > 180 ||
+    Math.abs(latNumber) > 90
+  ) {
     return undefined;
   }
   return { type: "Point", coordinates: [lonNumber, latNumber] };

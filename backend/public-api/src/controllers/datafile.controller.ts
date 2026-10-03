@@ -225,7 +225,12 @@ export class DatafileController extends Controller {
     @Path() onlyMetadata: boolean,
   ): Promise<PaginationResult<Datafile>> {
     this.setStatus(200);
-    return this.datafileService.getFiltered(body, skip, limit, onlyMetadata);
+    return this.datafileService.getFilteredExtended(
+      body,
+      skip,
+      limit,
+      onlyMetadata,
+    );
   }
 
   /**

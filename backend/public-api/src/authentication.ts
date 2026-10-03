@@ -76,3 +76,13 @@ export async function expressAuthentication(
     throw new UnauthorizedError();
   }
 }
+
+/**
+ * Returns the Firebase UID of the authenticated user of a request, or `undefined`
+ * when authentication is disabled. tsoa stores the result of `expressAuthentication`
+ * in `request.user`.
+ */
+export function getRequestUserId(request: Request): string | undefined {
+  const user = (request as Request & { user?: { uid?: unknown } }).user;
+  return typeof user?.uid === "string" ? user.uid : undefined;
+}

@@ -14,6 +14,28 @@ export function parseBooleanFlag(value: string | undefined): boolean {
   return value?.trim().toLowerCase() === "true";
 }
 
+/**
+ * Parses a comma-separated list of CORS origins. `*` (or an unset variable) allows every origin.
+ */
+export function parseCorsOrigins(value: string | undefined): "*" | string[] {
+  const origins = (value ?? "*")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  return origins.length === 0 || origins.includes("*") ? "*" : origins;
+}
+
+/** Parses a positive number, falling back to the default for missing/invalid values. */
+export function parsePositiveNumber(
+  value: string | undefined,
+  fallback: number,
+): number {
+  const parsed = Number(value);
+  return value !== undefined && Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : fallback;
+}
+
 const config = {
   // URL of the MongoDB database to connect to.
   // With Docker, the name of the container can also be provided instead of the IP address.
@@ -33,6 +55,13 @@ const config = {
   // Firebase project used to verify ID tokens. Verifying ID tokens only needs the project ID.
   // If unset, firebase-admin falls back to GOOGLE_CLOUD_PROJECT / application default credentials.
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  // Allowed CORS origins, comma separated (e.g. "https://tcf.example.org,http://localhost:4200").
+  // Default "*" allows every origin.
+  CORS_ORIGINS: parseCorsOrigins(process.env.CORS_ORIGINS),
+  // Maximum size of a single uploaded file in MB (uploads are buffered in memory).
+  MAX_UPLOAD_SIZE_MB: parsePositiveNumber(process.env.MAX_UPLOAD_SIZE_MB, 512),
+  // Maximum size of JSON / urlencoded request bodies (Express syntax, e.g. "100kb", "5mb").
+  JSON_BODY_LIMIT: process.env.JSON_BODY_LIMIT ?? "100kb",
 } as const;
 
 export default config;
