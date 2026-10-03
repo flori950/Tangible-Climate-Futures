@@ -1,5 +1,7 @@
 # Welcome to the SS23_ADSP_TCF Repository!
 
+> **About this fork:** This is Florian Jäger's fork of [Corgam/SS23_ADSP_TCF](https://github.com/Corgam/SS23_ADSP_TCF), the team repository of the TU Berlin course *(Advanced) Distributed Systems Prototyping*, summer term 2023, built with the UdK Berlin team. My part was the Angular frontend: the map view, translations, the header, file upload, address lookup, the upload workflow and the Browse Journeys page. The production values in `.env` are placeholders; set your own before deploying.
+
 This is an official repository for the `Tangible Climate Futures` project for the `(Advanced) Distributed Systems Prototyping SS23` course at TU Berlin. The description and the structure of our project, together with a detailed structure of implemented JSON objects, can be found in our [wiki](https://github.com/Corgam/SS23_ADSP_TCF/wiki).
 
 Project Developers:
