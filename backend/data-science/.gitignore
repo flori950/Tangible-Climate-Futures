@@ -1,0 +1,9 @@
+# Local virtualenv and tool caches for the data-science service
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/

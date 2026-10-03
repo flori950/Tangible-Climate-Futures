@@ -1,0 +1,35 @@
+# Tool configuration only; dependencies live in requirements*.txt / Pipfile.
+[project]
+name = "tcf-data-science"
+version = "1.0.0"
+description = "Flask microservice converting NetCDF / CERV2 files to JSON for the public API"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = [
+    "error",
+    # netCDF4 1.7.4 assigns ndarray.shape internally when *writing* 2-D+ data,
+    # which NumPy 2.5 deprecates. Only the test fixtures write NetCDF files.
+    "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["app", "config"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "config", "tests"]
