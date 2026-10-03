@@ -3,7 +3,11 @@ import type { Request, Response, NextFunction } from "express";
 import { ValidateError } from "tsoa";
 import mongoose from "mongoose";
 import errorMiddleware from "../../src/middlewares/error.middleware";
+import multer from "multer";
+import createHttpError from "http-errors";
 import {
+  ForbiddenError,
+  PayloadTooLargeError,
   FailedToParseError,
   NotFoundError,
   OperationNotSupportedError,
@@ -51,6 +55,25 @@ describe("errorMiddleware", () => {
       "Access denied. Please provide valid credentials.",
     ],
     [new SyntaxError("bad json"), 400, "bad json"],
+    [new ForbiddenError("not yours"), 403, "not yours"],
+    [new PayloadTooLargeError(), 413, "Payload too large."],
+    [new multer.MulterError("LIMIT_FILE_SIZE"), 413, "File too large"],
+    [
+      new multer.MulterError("LIMIT_UNEXPECTED_FILE"),
+      400,
+      "Unexpected file field",
+    ],
+    [
+      createHttpError(413, "request entity too large"),
+      413,
+      "request entity too large",
+    ],
+    [createHttpError(500, "internal"), 500, "internal"],
+    [
+      new mongoose.mongo.MongoServerError({ code: 16755, errmsg: "geo" }),
+      400,
+      "Invalid location: expected GeoJSON Point with [longitude, latitude].",
+    ],
     [new Error("boom"), 500, "boom"],
     [new Error(), 500, "Internal Server Error"],
   ])("maps %p to HTTP %d", (error, status, message) => {

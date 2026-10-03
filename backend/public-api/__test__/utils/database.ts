@@ -13,7 +13,10 @@ let mongoServer: MongoMemoryServer | undefined;
  * "Missing required sub-document 'driver' in the client metadata document".
  */
 export async function connectTestDatabase(): Promise<void> {
-  mongoServer = await MongoMemoryServer.create();
+  // Generous start timeout: a cold start (fresh install, coverage run) can exceed the 10 s default
+  mongoServer = await MongoMemoryServer.create({
+    instance: { launchTimeout: 60_000 },
+  });
   await mongoose.connect(mongoServer.getUri(), {
     runtimeAdapters: { os },
   });
